@@ -42,7 +42,20 @@ export const getTitle = (title) => {
                </Text>
           );
      } else {
-          return null;
+          return (
+               <Text
+                    bold
+                    mb={1}
+                    pr={3}
+                    fontSize={{
+                         base: 'sm',
+                         lg: 'lg',
+                    }}
+                    maxW="100%"
+                    flexWrap="wrap">
+                    Title Not Available
+               </Text>
+          );
      }
 };
 
