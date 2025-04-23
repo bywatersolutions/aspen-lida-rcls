@@ -1,15 +1,17 @@
 import React, { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { Platform, SafeAreaView} from "react-native";
+import { Platform, SafeAreaView, Share, share} from "react-native";
 import { Actionsheet, Alert, AlertDialog, Box, Button, Center, CheckIcon, FlatList, FormControl, HStack, Icon, Pressable, ScrollView, Select, Text, useDisclose, VStack } from 'native-base';
-import { fetchCampaigns, unenrollCampaign, enrollCampaign } from '../../../util/api/user';
+import { fetchCampaigns, unenrollCampaign, enrollCampaign, optIntoCampaignEmails, optUserOutOfCampaignLeaderboard, optUserInToCampaignLeaderboard} from '../../../util/api/user';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 import { UserInterfaceIdiom } from 'expo-constants';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { filter } from 'lodash';
 import { ChevronDownIcon, ChevronUpIcon } from 'native-base';
 import { Image } from 'expo-image';
+import { setCurrentClient } from '@sentry/react-native';
+
 
 
 
@@ -31,6 +33,7 @@ export const MyCampaigns = () => {
 	const [expandedCampaigns, setExpandedCampaigns] = React.useState(false);
 	const [selectedCampaign, setSelectedCampaign] = React.useState(null);
 	const [showActionSheet, setShowActionSheet] = React.useState(false);
+	const [selectedLinkedUserId, setSelectedLinkedUserId] = React.useState(null);
 
 	const { isOpen, onOpen, onClose } = useDisclose();
 
@@ -44,7 +47,7 @@ export const MyCampaigns = () => {
 		});
 	}, [navigation]);
 
-	const { status, data, error, isFetching} = useQuery(
+	const { status, data, error, isFetching, refetch} = useQuery(
 		['all_campaigns', library.baseUrl, language, filterBy], () => fetchCampaigns(page, pageSize, filterBy, library.baseUrl), {
 			initialData: campaigns,
 			keepPreviousData: true,
@@ -75,47 +78,66 @@ export const MyCampaigns = () => {
 		return { progressFraction, progressPercentage };
 	  };
 
-	const handleEnrollUnenroll = async (campaignId, linkedUserId = null) => {
-		setLoading(true);
+	const handleEnrollUnenroll = async (item) => {
+		console.log("in func");
+		if (!selectedCampaign) return;
+
 		try {
-			const isEnrolled = enrollmentStatus[campaignId];
-			const action = isEnrolled ? unenrollCampaign : enrollCampaign;
-			const userId = filterBy === 'linkedUserCampaigns' ? linkedUserId : user.id;
+			const linkedUserId = selectedLinkedUserId;
+			
 
-			await action (campaignId, userId, library.baseUrl, language);
+			if (selectedCampaign.enrolled) {
+				await unenrollCampaign(selectedCampaign.id, linkedUserId, filterBy, library.baseUrl);
 
+			} else {
+				await enrollCampaign(selectedCampaign.id, linkedUserId, filterBy, library.baseUrl);
 
-			setEnrollmentStatus((prev) => ({
-				...prev,
-				[campaignId]: !isEnrolled,
-			}));
-			queryClient.invalidateQueries({ queryKey: ['all_campaigns']});
+			}
+
+			await refetch();
+
+			handleCloseActions();
+;
 		} catch (error) {
-			console.error("Error enrolling/unenrolling", error);
-		} finally {
-			setLoading(false);
+			console.log("Error in enroll / unenroll: ", error);
 		}
+		
 	};
 
-	const handleEmailNotificationOptions = async (campaignId, linkedUserId = null) => {
-		setLoading(true);
+	const handleEmailNotificationOptions = async (item) => {
+		if (!selectedCampaign) return;
+
 		try {
-			const isOptedIn = emailNotificationStatus[campaignId];
-			const action = isOptedIn ? optOutOfEmails : optInToEmails;
-			const userId = filterBy === 'linkedUserCampaigns' ? linkedUserId : user.id;
+			const linkedUserId = selectedLinkedUserId;
+			const optIn = selectedCampaign.optInToCampaignEmailNotifications ? 0 : 1;
+			
+			await optIntoCampaignEmails(selectedCampaign.id, linkedUserId, filterBy, optIn, library.baseUrl);
+			
 
-			await action (campaignId, userId, library.baseUrl, language);
-
-
-			setEmailNotificationStatus((prev) => ({
-				...prev,
-				[campaignId]: !isOptedIn,
-			}));
-			queryClient.invalidateQueries({ queryKey: ['all_campaigns']});
+			await refetch();
+			handleCloseActions();
 		} catch (error) {
-			console.error("Error updating email preferences", error);
-		} finally {
-			setLoading(false);
+			console.log("Error in opt in / out of email notifications: ", error);
+		}
+	}
+
+	const handleLeaderboardOptions = async (item) => {
+		if (!selectedCampaign) return;
+
+		try {
+			const linkedUserId = selectedLinkedUserId;
+
+			if (selectedCampaign.optInToCampaignLeaderboard) {
+				await optUserOutOfCampaignLeaderboard(selectedCampaign.id, linkedUserId, filterBy, library.baseUrl);
+			} else {
+				await optUserInToCampaignLeaderboard(selectedCampaign.id, linkedUserId, filterBy, library.baseUrl);
+			}
+
+			await refetch();
+			handleCloseActions();
+
+		} catch (error) {
+			console.log("Error in opt in / out of leaderboard: ", error);
 		}
 	}
 	
@@ -134,15 +156,30 @@ export const MyCampaigns = () => {
 	}
 
 
-	const handleOpenActions = (item) => {
-		console.log('Action button clicked for: ', item);
+	const handleOpenActions = (item, linkedUserId) => {
 		setSelectedCampaign(item);
+		setSelectedLinkedUserId(linkedUserId);
 		setShowActionSheet(true);
-		console.log('Show ActionSheet:', showActionSheet);
 	}
 
 	const handleCloseActions = () => {
+		setSelectedCampaign(null);
 		setShowActionSheet(false);
+	}
+
+	const groupByLinkedUser = (campaigns) => {
+		return campaigns.reduce((acc, campaign) => {
+			const userName = campaign.linkedUserName || 'UnknownUser';
+			const userId = campaign.linkedUserId;
+
+			if (!acc[userName]) acc[userName] = { userId: userId, campaigns: [] };
+
+			acc[userName].campaigns.push({
+				...campaign,
+				linkedUserId: userId,
+			});
+			return acc;
+		}, {});
 	}
 
 	const handleToggleEnrollment = () => {
@@ -159,6 +196,8 @@ export const MyCampaigns = () => {
 		console.log('Toggling leaderboard for', selectedCampaign?.name);
 		onClose();
 	};
+
+
 
 
 	const renderCampaignItem = ({ item, onOpenActions, onToggle, expanded }) => {
@@ -196,12 +235,15 @@ export const MyCampaigns = () => {
 						<Text color="emerald.600">{campaignRewardName}</Text>
 					)}
 					{item.rewardType == 1 && item.rewardExists == 1 && item.badgeImage && (
-						<Image
-						source={{ uri: campaignImageUrl }}
-						alt={ item.rewardName }
-						contentFit="contain"
-						style={{ width: 100, height: 100 }}
-						/>
+						<>
+							<Image
+							source={{ uri: campaignImageUrl }}
+							alt={ item.rewardName }
+							contentFit="contain"
+							style={{ width: 100, height: 100 }}
+							/>
+							
+						</>
 					)}
 				</Box>
 				<Text flex={2} color="gray.500">{`${startDate} - ${endDate}`}</Text>
@@ -216,7 +258,7 @@ export const MyCampaigns = () => {
 				<Button 
 					size="sm"
 					flex={1}
-					onPress={() => onOpenActions(item)}
+					onPress={() => onOpenActions(item, filterBy === 'linkedUserCampaigns' ? item.linkedUserId : null)}
 					aria-label='Open actions menu for this ${item.name}'>
 						Actions
 				</Button>
@@ -225,56 +267,114 @@ export const MyCampaigns = () => {
 			{expanded && (
 				<Box px={2} py={2} bg="coolGray.100" borderRadius="md">
 					{(item.milestones ?? []). length > 0 ? (
-						<VStack space={2}>
-							<HStack justifyContent="space-between" pb={1} borderBottomWidth={1}>
-								<Text flex={2} bold>Name</Text>
-								<Text flex={1} bold>Goal</Text>
-								<Text flex={1} bold>Reward</Text>
-							</HStack>
-
-							{item.milestones.map((milestone, i) => {
-								const imageUrl = String(library.baseUrl + milestone.rewardImage);
-								
-								return(
-									<HStack 
-										key={i} 
-										justifyContent="space-between"
-										alignItems="center"
-									>
-										<Text flex={2}>{milestone.name}</Text>
-										<Text flex={1}>{milestone.completedGoals} / {milestone.totalGoals}</Text>
-										<Box flex={1}>
-											{milestone.displayName == 1 && (
-												<Text>{milestone.rewardName}</Text>
-
-											)}
-											{milestone.rewardType == 1 && milestone.rewardExists == 1 && milestone.rewardImage && (
-												<Image
-												source={{ uri: imageUrl }}
-												contentFit="contain"
-												style={{ width: 100, height: 100 }}
-												alt={ milestone.rewardName }
-												/>
-											)}
-										</Box>
-
-									
+						<Box mt={4}>
+							<Text bold fontSize="md" mb={2}>Milestones</Text>
+							<VStack space={2}>
+								<HStack justifyContent="space-between" pb={1} borderBottomWidth={1}>
+									<Text flex={2} bold>Name</Text>
+									<Text flex={1} bold>Goal</Text>
+									<Text flex={1} bold>Reward</Text>
 								</HStack>
-							);
-						})}
-						</VStack>
+
+								{item.milestones.map((milestone, i) => {
+									const imageUrl = String(library.baseUrl + milestone.rewardImage);
+									
+									return(
+										<HStack 
+											key={i} 
+											justifyContent="space-between"
+											alignItems="center"
+										>
+											<Text flex={2}>{milestone.name}</Text>
+											<Text flex={1}>{milestone.completedGoals} / {milestone.totalGoals}</Text>
+											<Box flex={1}>
+												{milestone.displayName == 1 && (
+													<Text>{milestone.rewardName}</Text>
+
+												)}
+												{milestone.rewardType == 1 && milestone.rewardExists == 1 && milestone.rewardImage && (
+													<Image
+													source={{ uri: imageUrl }}
+													contentFit="contain"
+													style={{ width: 100, height: 100 }}
+													alt={ milestone.rewardName }
+													/>
+												)}
+											</Box>
+
+										
+									</HStack>
+								);
+							})}
+							</VStack>
+						</Box>
 					) : (
 						<Text color="gray.400" italic>No milestones available</Text>
+					)}
+					{(item.extraCreditActivities ?? []).length > 0 ? (
+						<Box mt={4}>
+							<Text bold fontSize="md" mb={2}>Extra Credit Activities</Text>
+
+							<VStack space={2}>
+								<HStack justifyContent="space-between" pb={1} borderBottomWidth={1}>
+									<Text flex={2} bold>Name</Text>
+									<Text flex={1} bold>Goal</Text>
+									<Text flex={1} bold>Reward</Text>
+								</HStack>
+
+								{item.extraCreditActivities.map((activity, i) => {
+									const extraImageUrl = String(library.baseUrl + activity.rewardImage);
+
+									return (
+										<HStack 
+											key={i} 
+											justifyContent="space-between"
+											alignItems="center"
+										>
+											<Text flex={2}>{activity.name}</Text>
+											<Text flex={1}>{activity.completedGoals} / {activity.totalGoals}</Text>
+											<Box flex={1}>
+												{activity.displayName == 1 && (
+													<Text>{activity.rewardName}</Text>
+
+												)}
+												{activity.rewardType == 1 && activity.rewardExists == 1 && activity.rewardImage && (
+													<Image
+													source={{ uri: extraImageUrl }}
+													contentFit="contain"
+													style={{ width: 100, height: 100 }}
+													alt={ activity.rewardName }
+													/>
+												)}
+											</Box>
+										</HStack>
+									)
+								})}
+
+							</VStack>
+						</Box>
+					
+					) : (
+						<Text color="gray.400" italic>No extra Credit Activities</Text>
 					)}
 				</Box>
 			)}
 
 			{/* {showActionSheet && ( */}
 			<Actionsheet isOpen={showActionSheet} onClose={handleCloseActions}>
+
 				<Actionsheet.Content>
-						<Actionsheet.Item onPress={() => console.log('enroll')}>enroll</Actionsheet.Item>
-						<Actionsheet.Item onPress={() => console.log('Opten in to Noticifactions')}>Notifications</Actionsheet.Item>
-						<Actionsheet.Item onPress={() => console.log('Opten in to Leaderboard')}>Leaderbaord</Actionsheet.Item>
+						{(item?.canEnroll || item.enrolled) && (
+							<Actionsheet.Item onPress={handleEnrollUnenroll}>{selectedCampaign?.enrolled ? 'Unenroll' : 'Enroll'}</Actionsheet.Item>
+						)}
+						{(filterBy !== 'linkedUserCampaigns' && (
+							<>
+							<Actionsheet.Item onPress={handleEmailNotificationOptions}>{item?.optInToCampaignEmailNotifications ? 'Opt Out of Notifications' : 'Opt in to Notifications'}</Actionsheet.Item>
+							{library?.campaignLeaderboardDisplay === 'displayUser' && (
+								<Actionsheet.Item onPress={handleLeaderboardOptions}>{item?.optInToCampaignLeaderboard ? 'Opt Out of Leaderboard' :  'Opt in to Leaderboard'}</Actionsheet.Item>
+							)}
+							</>
+						))}
 						<Actionsheet.Item onPress={handleCloseActions}>Cancel</Actionsheet.Item>
 				</Actionsheet.Content>
 			</Actionsheet>
@@ -332,6 +432,28 @@ export const MyCampaigns = () => {
 					<Text>Loading...</Text>
 				) : status === 'error' ? (
 					<Text>Error loading campaigns</Text>
+				) : filterBy === 'linkedUserCampaigns' ? (
+					<>
+						{Object.entries(groupByLinkedUser(data?.campaigns ?? [])).map(([userName, { userId, campaigns: groupedCampaigns}]) => (
+							<Box key={userId} mb={6}>
+								<Box px={4} py={2} bg="coolGray.200">
+									<Text fontSize="lg" bold>
+										Campaigns for: {userName}
+									</Text>
+								</Box>
+							
+
+							{groupedCampaigns.map((item) =>
+								renderCampaignItem({
+									item,
+									expanded: expandedCampaigns[item.id],
+									onToggle: () => toggleExpanded(item.id),
+									onOpenActions: () => handleOpenActions(item, filterBy === 'linkedUserCampaigns' ? userId :  null),
+								})
+							)}
+							</Box>
+						))}
+					</>
 				) : (
 					<FlatList
 					data={data?.campaigns ?? []}
@@ -341,7 +463,7 @@ export const MyCampaigns = () => {
 							item,
 							expanded: expandedCampaigns[item.id],
 							onToggle: () => toggleExpanded(item.id),
-							onOpenActions: handleOpenActions,
+							onOpenActions: () => handleOpenActions(item, filterBy === 'linkedUserCampaigns' ? item.linkedUserId :  null),
 						})
 					}
 					keyExtractor={(item, index) => index.toString()}
