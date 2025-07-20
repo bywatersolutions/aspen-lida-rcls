@@ -85,7 +85,7 @@ else
     APP_ENV=$slug eas update --branch $branchName --message "$comment" --platform $osPlatform
   else
     #APP_ENV=$slug eas build --profile development --platform ios
-    APP_ENV=$slug npx expo prebuild
+    #APP_ENV=$slug npx expo prebuild
     APP_ENV=$slug eas build --platform $osPlatform --profile $channel --no-wait
   fi
   cd ../scripts
