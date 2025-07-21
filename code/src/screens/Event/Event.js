@@ -7,7 +7,30 @@ import * as WebBrowser from 'expo-web-browser';
 
 import _ from 'lodash';
 import moment from 'moment';
-import { Alert, Box, Button, Center, Divider, Heading, HStack, Icon, Modal, Pressable, ScrollView, Text, Toast, useColorModeValue, useToken, VStack } from 'native-base';
+import {
+     useToast,
+     Box,
+     Divider,
+     Pressable,
+     ScrollView,
+     VStack,
+     Text,
+     Alert,
+     AlertIcon,
+     Button,
+     ButtonGroup,
+     ButtonText,
+     Center,
+     Heading,
+     Icon,
+     Modal,
+     ModalContent,
+     ModalHeader,
+     ModalBody,
+     ModalFooter,
+     HStack,
+     CloseIcon, ModalCloseButton, ModalBackdrop,
+} from '@gluestack-ui/themed';
 import React from 'react';
 import { Platform } from 'react-native';
 import { showLocation } from 'react-native-map-link';
@@ -16,7 +39,13 @@ import { showLocation } from 'react-native-map-link';
 import { loadError, popAlert, popToast } from '../../components/loadError';
 import { LoadingSpinner, loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
-import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import {
+     LanguageContext,
+     LibrarySystemContext,
+     SystemMessagesContext,
+     ThemeContext,
+     UserContext,
+} from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getEventDetails, saveEvent } from '../../util/api/event';
@@ -35,6 +64,7 @@ export const EventScreen = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
+     const { textColor, theme, colorMode } = React.useContext(ThemeContext);
      const [hasValidImage, setHasValidImage] = React.useState(false);
      const { status, data, error, isFetching } = useQuery(['event', id, source, language, library.baseUrl], () => getEventDetails(id, source, language, library.baseUrl));
 
@@ -85,16 +115,10 @@ const DisplayEvent = (payload) => {
      const event = payload.data;
      const hasValidImage = payload.hasValidImage;
      const route = useRoute();
-     const id = route.params.id;
      const source = route.params.source;
-     const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
-
-     const key = 'large_' + event.id;
-
-     const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
-     const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
-
+     const { textColor, theme, colorMode } = React.useContext(ThemeContext);
+     const backgroundColor = colorMode === 'light' ? theme['colors']['warmGray']['200'] : theme['colors']['coolGray']['900'];
      const openLink = async () => {
           const browserParams = {
                enableDefaultShareMenuItem: false,
@@ -142,7 +166,7 @@ const DisplayEvent = (payload) => {
      return (
           <>
                {event.cover ? <Box h={{ base: 125, lg: 200 }} w="100%" bgColor="warmGray.200" _dark={{ bgColor: 'coolGray.900' }} zIndex={-1} position="absolute" left={0} top={0} /> : null}
-               <Box safeArea={5} w="100%">
+               <Box p="$5" w="100%">
                     <Center mt={event.cover ? 5 : 0} width="100%">
                          {event.cover ? (
                               <Image
@@ -166,14 +190,14 @@ const DisplayEvent = (payload) => {
                     </VStack>
                     {event.registrationRequired && event.registrationBody ? getRegistrationModal(event) : null}
                     {event.inUserEvents ? getInYourEvents() : getAddToYourEvents(event.id, source)}
-                    <HStack justifyContent="space-between" space={2}>
+                    <HStack justifyContent="space-between" space="sm">
                          {event.canAddToList ? <AddToList source="Events" itemId={event.id} btnStyle="reg" btnWidth="48%" /> : null}
-                         <Button w={event.canAddToList ? '49%' : '100%'} onPress={() => openLink()}>
-                              {getTermFromDictionary(language, 'more_info')}
+                         <Button bgColor={theme['colors']['coolGray']['200']} w={event.canAddToList ? '49%' : '100%'} onPress={() => openLink()}>
+                              <ButtonText color={theme['colors']['coolGray']['800']}>{getTermFromDictionary(language, 'more_info')}</ButtonText>
                          </Button>
                     </HStack>
                     {getDescription(event.description)}
-                    <HStack justifyContent="space-between" space={5} mt={5} flexWrap="wrap">
+                    <HStack justifyContent="space-between" space="lg" mt="$5" flexWrap="wrap">
                          {getAudiences(event.audiences)}
                          {getCategories(event.categories)}
                          {getProgramTypes(event.programTypes)}
@@ -184,10 +208,11 @@ const DisplayEvent = (payload) => {
 };
 
 const getTitle = (title, hasCoverImage) => {
+     const { textColor } = React.useContext(ThemeContext);
      if (title) {
           return (
                <>
-                    <Heading pt={hasCoverImage ? 5 : 0} pb={3} alignText="center">
+                    <Heading pt={hasCoverImage ? 5 : 0} pb={3} alignText="center" color={textColor}>
                          {title}
                     </Heading>
                </>
@@ -198,14 +223,15 @@ const getTitle = (title, hasCoverImage) => {
 };
 
 const getDescription = (description) => {
+     const { textColor } = React.useContext(ThemeContext);
      const { language } = React.useContext(LanguageContext);
      if (description) {
           return (
                <Box mt={5}>
-                    <Text fontSize={{ base: 'lg', lg: '2xl' }} bold alignText="center">
+                    <Text fontSize={{ base: 'lg', lg: '2xl' }} bold alignText="center" color={textColor}>
                          {getTermFromDictionary(language, 'about')}
                     </Text>
-                    <Text fontSize={{ base: 'md', lg: 'lg' }} lineHeight={{ base: '22px', lg: '26px' }}>
+                    <Text fontSize={{ base: 'md', lg: 'lg' }} lineHeight={{ base: '22px', lg: '26px' }} color={textColor}>
                          {decodeHTML(description)}
                     </Text>
                </Box>
@@ -216,15 +242,16 @@ const getDescription = (description) => {
 };
 
 const getAudiences = (audiences) => {
+     const { textColor } = React.useContext(ThemeContext);
      const { language } = React.useContext(LanguageContext);
      if (audiences) {
           return (
                <Box>
-                    <Text fontSize={{ base: 'lg', lg: '2xl' }} bold alignText="center">
+                    <Text fontSize={{ base: 'lg', lg: '2xl' }} bold alignText="center" color={textColor}>
                          {getTermFromDictionary(language, 'audiences')}
                     </Text>
                     {_.map(audiences, function (item, index, array) {
-                         return <Text>{item}</Text>;
+                         return <Text color={textColor}>{item}</Text>;
                     })}
                </Box>
           );
@@ -234,15 +261,16 @@ const getAudiences = (audiences) => {
 };
 
 const getCategories = (categories) => {
+     const { textColor } = React.useContext(ThemeContext);
      const { language } = React.useContext(LanguageContext);
      if (categories) {
           return (
                <Box>
-                    <Text fontSize={{ base: 'lg', lg: '2xl' }} bold alignText="center">
+                    <Text fontSize={{ base: 'lg', lg: '2xl' }} bold alignText="center" color={textColor}>
                          {getTermFromDictionary(language, 'categories')}
                     </Text>
                     {_.map(categories, function (item, index, array) {
-                         return <Text>{item}</Text>;
+                         return <Text color={textColor}>{item}</Text>;
                     })}
                </Box>
           );
@@ -252,15 +280,16 @@ const getCategories = (categories) => {
 };
 
 const getProgramTypes = (programTypes) => {
+     const { textColor } = React.useContext(ThemeContext);
      const { language } = React.useContext(LanguageContext);
      if (programTypes) {
           return (
                <Box>
-                    <Text fontSize={{ base: 'lg', lg: '2xl' }} bold alignText="center">
+                    <Text fontSize={{ base: 'lg', lg: '2xl' }} bold alignText="center" color={textColor}>
                          {getTermFromDictionary(language, 'program_types')}
                     </Text>
                     {_.map(programTypes, function (item, index, array) {
-                         return <Text>{item}</Text>;
+                         return <Text color={textColor}>{item}</Text>;
                     })}
                </Box>
           );
@@ -276,6 +305,7 @@ const getAddToCalendar = (start, end, location, event) => {
      const [modalBodyHeading, setModalBodyHeading] = React.useState('');
      const [calendarId, setCalendarId] = React.useState();
      const [confirmAdd, setConfirmAdd] = React.useState(false);
+     const { textColor } = React.useContext(ThemeContext);
 
      let displayDay = false;
      let displayStartTime = false;
@@ -367,7 +397,8 @@ const getAddToCalendar = (start, end, location, event) => {
                          url: event.url,
                     }).then(async (result) => {
                          console.log(result);
-                         return Toast.show({
+                         const toast = useToast();
+                         return toast.show({
                               duration: 5000,
                               accessibilityAnnouncement: getTermFromDictionary(language, 'event_added_to_calendar'),
                               avoidKeyboard: true,
@@ -375,17 +406,17 @@ const getAddToCalendar = (start, end, location, event) => {
                                    return (
                                         <Center>
                                              <Alert maxW="400" status="success" colorScheme="success">
-                                                  <VStack space={2} flexShrink={1} w="100%">
-                                                       <HStack flexShrink={1} space={2} alignItems="center" justifyContent="space-between">
-                                                            <HStack flexShrink={1} space={2}>
-                                                                 <Alert.Icon />
-                                                                 <Text fontSize="md" fontWeight="medium" _dark={{ color: 'coolGray.800' }}>
+                                                  <VStack space="sm" flexShrink={1} w="100%">
+                                                       <HStack flexShrink={1} space="sm" alignItems="center" justifyContent="space-between">
+                                                            <HStack flexShrink={1} space="sm">
+                                                                 <AlertIcon />
+                                                                 <Text bold fontSize="md" color={textColor}>
                                                                       {getTermFromDictionary(language, 'added_successfully')}
                                                                  </Text>
                                                             </HStack>
                                                        </HStack>
-                                                       <Box pl="6" _dark={{ _text: { color: 'coolGray.600' } }}>
-                                                            <Text>{getTermFromDictionary(language, 'event_added_to_calendar')}</Text>
+                                                       <Box pl="$6">
+                                                            <Text color={textColor}>{getTermFromDictionary(language, 'event_added_to_calendar')}</Text>
                                                        </Box>
                                                   </VStack>
                                              </Alert>
@@ -417,14 +448,17 @@ const getAddToCalendar = (start, end, location, event) => {
                     </HStack>
                </Pressable>
                <Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false} size="md">
-                    <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
-                         <Modal.CloseButton />
-                         <Modal.Header>
+                    <ModalBackdrop />
+                    <ModalContent maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
+                         <ModalHeader>
                               <Heading size="md">{modalBodyHeading}</Heading>
-                         </Modal.Header>
-                         <Modal.Body>{modalBodyText}</Modal.Body>
-                         <Modal.Footer>
-                              <Button.Group space={2} size="md">
+                              <ModalCloseButton hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}>
+                                   <Icon as={CloseIcon} color={textColor} />
+                              </ModalCloseButton>
+                         </ModalHeader>
+                         <ModalBody><Text>{modalBodyText}</Text></ModalBody>
+                         <ModalFooter>
+                              <ButtonGroup space={2} size="md">
                                    <Button
                                         colorScheme="muted"
                                         variant="outline"
@@ -434,7 +468,7 @@ const getAddToCalendar = (start, end, location, event) => {
                                              setModalBodyText('');
                                              setModalBodyHeading('');
                                         }}>
-                                        {getTermFromDictionary(language, 'close_window')}
+                                        <ButtonText>{getTermFromDictionary(language, 'close_window')}</ButtonText>
                                    </Button>
                                    {confirmAdd ? (
                                         <Button
@@ -446,18 +480,19 @@ const getAddToCalendar = (start, end, location, event) => {
                                                        setModalBodyHeading('');
                                                   })
                                              }>
-                                             {getTermFromDictionary(language, 'add_event')}
+                                             <ButtonText>{getTermFromDictionary(language, 'add_event')}</ButtonText>
                                         </Button>
                                    ) : null}
-                              </Button.Group>
-                         </Modal.Footer>
-                    </Modal.Content>
+                              </ButtonGroup>
+                         </ModalFooter>
+                    </ModalContent>
                </Modal>
           </>
      );
 };
 
 const getDirections = (location, room) => {
+     const { textColor } = React.useContext(ThemeContext);
      let hasCoordinates = false;
      if (location) {
           if (!_.isUndefined(location.coordinates) && _.isObject(location.coordinates)) {
@@ -489,17 +524,17 @@ const getDirections = (location, room) => {
 
      if (location) {
           return (
-               <Pressable py="3" mb={5} onPress={() => handleGetDirections()}>
-                    <HStack space="1" alignItems="center" justifyContent="space-between">
-                         <HStack space="3" alignItems="center">
-                              <Icon as={MaterialIcons} name="location-pin" size="5" />
+               <Pressable py="$3" mb="$5" onPress={() => handleGetDirections()}>
+                    <HStack space="sm" alignItems="center" justifyContent="space-between">
+                         <HStack space="sm" alignItems="center">
+                              <Icon as={MaterialIcons} name="location-pin" size="md" color={textColor}/>
                               <VStack>
-                                   {location.name ? <Text bold>{location.name}</Text> : null}
-                                   {room ? <Text>{room}</Text> : null}
-                                   {location.address ? <Text>{location.address}</Text> : null}
+                                   {location.name ? <Text bold color={textColor}>{location.name}</Text> : null}
+                                   {room ? <Text color={textColor}>{room}</Text> : null}
+                                   {location.address ? <Text color={textColor}>{location.address}</Text> : null}
                               </VStack>
                          </HStack>
-                         {hasCoordinates ? <Icon as={MaterialIcons} name="chevron-right" size="7" /> : null}
+                         {hasCoordinates ? <Icon as={MaterialIcons} name="chevron-right" size="lg" color={textColor} /> : null}
                     </HStack>
                </Pressable>
           );
@@ -513,6 +548,7 @@ const getAddToYourEvents = (id, source) => {
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
+     const { textColor, theme, colorMode } = React.useContext(ThemeContext);
      const [isLoading, setIsLoading] = React.useState(false);
 
      const addToEvents = async () => {
@@ -533,8 +569,8 @@ const getAddToYourEvents = (id, source) => {
      };
 
      return (
-          <Button onPress={() => addToEvents()} mb={2} colorScheme="tertiary" isLoading={isLoading} isLoadingText={getTermFromDictionary(language, 'adding', true)}>
-               {getTermFromDictionary(language, 'add_to_events')}
+          <Button bgColor={theme['colors']['tertiary']['500']} onPress={() => addToEvents()} mb="$2" isLoading={isLoading} isLoadingText={getTermFromDictionary(language, 'adding', true)}>
+               <ButtonText color={theme['colors']['tertiary']['500-text']}>{getTermFromDictionary(language, 'add_to_events')}</ButtonText>
           </Button>
      );
 };
@@ -542,8 +578,8 @@ const getAddToYourEvents = (id, source) => {
 const getInYourEvents = () => {
      const { language } = React.useContext(LanguageContext);
      return (
-          <Button mb={2} colorScheme="tertiary" onPress={() => navigateStack('AccountScreenTab', 'MyEvents')}>
-               {getTermFromDictionary(language, 'in_your_events')}
+          <Button mb="$2" bgColor={theme['colors']['tertiary']['500']} onPress={() => navigateStack('AccountScreenTab', 'MyEvents')}>
+               <ButtonText color={theme['colors']['tertiary']['500-text']}>{getTermFromDictionary(language, 'in_your_events')}</ButtonText>
           </Button>
      );
 };
@@ -552,8 +588,8 @@ const getRegistrationModal = (event) => {
      const { language } = React.useContext(LanguageContext);
      const [showRegistrationModal, setShowRegistrationModal] = React.useState(false);
 
-     const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
-     const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
+     const { textColor, theme, colorMode } = React.useContext(ThemeContext);
+     const backgroundColor= colorMode === 'light' ? theme['colors']['warmGray']['200'] : theme['colors']['coolGray']['900'];
 
      const openLink = async () => {
           /* location.homeLink */
@@ -573,30 +609,33 @@ const getRegistrationModal = (event) => {
 
      return (
           <>
-               <Button onPress={() => setShowRegistrationModal(true)} mb={2} colorScheme="tertiary">
-                    {getTermFromDictionary(language, 'registration_information')}
+               <Button bgColor={theme['colors']['tertiary']['500']} onPress={() => setShowRegistrationModal(true)} mb="$2">
+                    <ButtonText color={theme['colors']['tertiary']['500-text']}>{getTermFromDictionary(language, 'registration_information')}</ButtonText>
                </Button>
                <Modal isOpen={showRegistrationModal} onClose={() => setShowRegistrationModal(false)} closeOnOverlayClick={false} size="lg">
-                    <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
-                         <Modal.CloseButton />
-                         <Modal.Header>
+                    <ModalBackdrop />
+                    <ModalContent bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']} maxWidth="90%">
+                         <ModalHeader>
                               <Heading size="md">{getTermFromDictionary(language, 'registration_information')}</Heading>
-                         </Modal.Header>
-                         <Modal.Body>{stripHTML(decodeHTML(event.registrationBody))}</Modal.Body>
-                         <Modal.Footer>
-                              <Button.Group space={2} size="md">
+                              <ModalCloseButton hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}>
+                                   <Icon as={CloseIcon} color={textColor} />
+                              </ModalCloseButton>
+                         </ModalHeader>
+                         <ModalBody>{stripHTML(decodeHTML(event.registrationBody))}</ModalBody>
+                         <ModalFooter>
+                              <ButtonGroup space="sm" size="md">
                                    <Button
-                                        colorScheme="muted"
+                                        bgColor={theme['colors']['coolGray']['200']}
                                         variant="outline"
                                         onPress={() => {
                                              setShowRegistrationModal(false);
                                         }}>
-                                        {getTermFromDictionary(language, 'close_window')}
+                                        <ButtonText color={theme['colors']['coolGray']['800']}>{getTermFromDictionary(language, 'close_window')}</ButtonText>
                                    </Button>
-                                   <Button onPress={() => openLink()}>{getTermFromDictionary(language, 'go_to_registration')}</Button>
-                              </Button.Group>
-                         </Modal.Footer>
-                    </Modal.Content>
+                                   <Button bgColor={theme['colors']['primary']['500']} onPress={() => openLink()}><ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'go_to_registration')}</ButtonText></Button>
+                              </ButtonGroup>
+                         </ModalFooter>
+                    </ModalContent>
                </Modal>
           </>
      );
