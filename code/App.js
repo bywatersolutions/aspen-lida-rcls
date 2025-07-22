@@ -58,7 +58,7 @@ export default function AppContainer() {
      const [isLoading, setLoading] = React.useState(true);
      const [aspenTheme, setAspenTheme] = React.useState([]);
      const [colorMode, setColorMode] = React.useState(null);
-     const { mode, updateColorMode } = React.useContext(ThemeContext);
+     const { mode, updateColorMode, updateTheme } = React.useContext(ThemeContext);
      const [statusBarColor, setStatusBarColor] = React.useState('light-content');
 
      const glueColorMode = useColorMode();
@@ -91,6 +91,7 @@ export default function AppContainer() {
                     await createTheme(colorMode).then(async (result) => {
                          logDebugMessage("5a retrieved data from createTheme");
                          setAspenTheme(result);
+                         updateTheme(result);
                          logDebugMessage("5b Set Aspen Theme");
                          if (result.colors?.primary['baseContrast'] === '#000000') {
                               setStatusBarColor('dark-content');

@@ -1,7 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useQueryClient } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
@@ -92,8 +91,6 @@ try {
 
 
 export function App() {
-     const queryClient = useQueryClient();
-     const { updateUser } = React.useContext(UserContext);
      const primaryColor = useToken('colors', 'primary.base');
      const primaryColorContrast = useToken('colors', useContrastText(primaryColor));
      const screenBackgroundColor = useToken('colors', useColorModeValue('warmGray.50', 'coolGray.800'));
@@ -246,7 +243,7 @@ export function App() {
                signOut: async () => {
                     await RemoveData().then((res) => {
                          //queryClient.invalidateQueries({});
-                         updateUser([]);
+                         //updateUser([]);
                          dispatch({ type: 'SIGN_OUT' });
                     });
                     logDebugMessage('Session ended.');

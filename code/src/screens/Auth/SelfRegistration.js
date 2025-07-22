@@ -6,10 +6,12 @@ import { Platform } from 'react-native';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getSelfRegistrationForm, submitSelfRegistration } from '../../util/api/library';
+import { ThemeContext } from '../../context/initialContext';
 
-import { ScrollView, Box, Button, Center, FormControl, Input, Text, Select, CheckIcon } from 'native-base';
+import { ScrollView, Box, Button, ButtonGroup, ButtonText, FormControl, FormControlHelper, FormControlHelperText, Icon, Input, Text, Select, SelectTrigger, SelectInput, SelectIcon, ChevronDownIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, CheckIcon, FormControlLabel, FormControlLabelText, InputField } from '@gluestack-ui/themed';
 
 export const SelfRegistration = () => {
+	const {theme, textColor} = React.useContext(ThemeContext);
 	const route = useRoute();
 	const navigation = useNavigation();
 	const libraryUrl = route?.params?.libraryUrl ?? '';
@@ -55,103 +57,116 @@ export const SelfRegistration = () => {
 					{_.map(fields, function(section, index, collection) {
 						const {label, properties} = section;
 						return (
-							<Box mb={5}>
-							<Text bold fontSize="16">{label}</Text>
+							<Box mb="$5">
+							<Text bold fontSize="16" color={textColor}>{label}</Text>
 							{_.map(properties, function(field, key) {
 							const {type, description, maxLength, required, property} = field;
 							const fieldLabel = field.label;
 							if (type === 'text') {
 								return (
-									<FormControl my={2} isRequired={required}>
-										<FormControl.Label>{fieldLabel}</FormControl.Label>
-										<Input
-											type='text'
-											key={key}
-											name={property}
-											maxLength={parseInt(maxLength)}
-											accessibilityLabel={description}
-											returnKeyType="next"
-											onChangeText={(value) => {
-												console.log(property, value);
-												handleInputChange(property, value);
-											}}
-										/>
+									<FormControl my="$2" isRequired={required}>
+										<FormControlLabel><FormControlLabelText color={textColor}>{fieldLabel}</FormControlLabelText></FormControlLabel>
+										<Input><InputField type='text'
+										                   key={key}
+										                   name={property}
+										                   maxLength={parseInt(maxLength)}
+										                   accessibilityLabel={description}
+										                   returnKeyType="next"
+										                   color={textColor}
+										                   onChangeText={(value) => {
+											                   console.log(property, value);
+											                   handleInputChange(property, value);
+										                   }}/></Input>
 										{!_.isEmpty(description) ? (
-											<FormControl.HelperText>
-												{description}
-											</FormControl.HelperText>
+											<FormControlHelper>
+												<FormControlHelperText>
+													{description}
+												</FormControlHelperText>
+											</FormControlHelper>
 										) : null}
 									</FormControl>
 								)
 							} else if (type === 'password') {
 								return (
-									<FormControl my={2} isRequired={required}>
-										<FormControl.Label>{fieldLabel}</FormControl.Label>
-										<Input
-											type='password'
-											key={property}
-											name={property}
-											maxLength={parseInt(maxLength)}
-											accessibilityLabel={description}
-											onChangeText={(value) => {
-												handleInputChange(property, value);
-											}}
-										/>
+									<FormControl my="$2" isRequired={required}>
+										<FormControlLabel><FormControlLabelText color={textColor}>{fieldLabel}</FormControlLabelText></FormControlLabel>
+										<Input><InputField type='password'
+										                   key={property}
+										                   name={property}
+										                   maxLength={parseInt(maxLength)}
+										                   accessibilityLabel={description}
+										                   color={textColor}
+										                   onChangeText={(value) => {
+											                   handleInputChange(property, value);
+										                   }}/>
+										</Input>
 										{!_.isEmpty(description) ? (
-											<FormControl.HelperText>
-												{description}
-											</FormControl.HelperText>
+											<FormControlHelper>
+												<FormControlHelperText>
+													{description}
+												</FormControlHelperText>
+											</FormControlHelper>
 										) : null}
 									</FormControl>
 								)
 							}  else if (type === 'email') {
 								return (
-									<FormControl my={2} isRequired={required}>
-										<FormControl.Label>{fieldLabel}</FormControl.Label>
-										<Input
-											type='email'
-											key={property}
-											name={property}
-											maxLength={parseInt(maxLength)}
-											accessibilityLabel={description}
-											onChangeText={(value) => {
-												handleInputChange(property, value);
-											}}
-										/>
+									<FormControl my="$2" isRequired={required}>
+										<FormControlLabel><FormControlLabelText color={textColor}>{fieldLabel}</FormControlLabelText></FormControlLabel>
+										<Input><InputField type='email'
+										                   key={property}
+										                   name={property}
+										                   maxLength={parseInt(maxLength)}
+										                   accessibilityLabel={description}
+										                   color={textColor}
+										                   onChangeText={(value) => {
+											                   handleInputChange(property, value);
+										                   }} /></Input>
 										{!_.isEmpty(description) ? (
-											<FormControl.HelperText>
-												{description}
-											</FormControl.HelperText>
+											<FormControlHelper>
+												<FormControlHelperText>
+													{description}
+												</FormControlHelperText>
+											</FormControlHelper>
 										) : null}
 									</FormControl>
 								)
 							} else if (type === 'enum') {
 								const values = field.values ?? {};
 								return (
-									<FormControl my={2} isRequired={required}>
-										<FormControl.Label>{fieldLabel}</FormControl.Label>
+									<FormControl my="$2" isRequired={required}>
+										<FormControlLabel><FormControlLabelText color={textColor}>{fieldLabel}</FormControlLabelText></FormControlLabel>
 										<Select
 											name={property}
-											isReadOnly={Platform.OS === 'android'}
 											accessibilityLabel={description}
-											_selectedItem={{
-												bg: 'tertiary.300',
-												endIcon: <CheckIcon size="5" />,
-											}}
 											onValueChange={(value) => {
 												handleInputChange(property, value);
 											}}
 										>
+											<SelectTrigger variant="outline" size="md">
+												<SelectInput placeholder="Select option" color={textColor}/>
+												<SelectIcon mr="$3">
+													<Icon as={ChevronDownIcon} color={textColor}/>
+												</SelectIcon>
+											</SelectTrigger>
+											<SelectPortal>
+												<SelectBackdrop />
+												<SelectContent>
+													<SelectDragIndicatorWrapper>
+														<SelectDragIndicator />
+													</SelectDragIndicatorWrapper>
 											{_.map(values, function (item, index, array) {
-												console.log(item);
-												console.log(index);
-												return <Select.Item key={index} value={index} label={item} />;
+												return <SelectItem key={index} value={index} label={item} />;
 											})}
+												</SelectContent>
+											</SelectPortal>
 										</Select>
 										{!_.isEmpty(description) ? (
-											<FormControl.HelperText>
-												{description}
-											</FormControl.HelperText>
+                                                       <FormControlHelper>
+                                                            <FormControlHelperText>
+                                                                 {description}
+                                                            </FormControlHelperText>
+                                                       </FormControlHelper>
 										) : null}
 									</FormControl>
 								)
@@ -183,64 +198,64 @@ export const SelfRegistration = () => {
 				loadingSpinner()
 			) : (
 				<ScrollView>
-					<Box safeArea={5}>
+					<Box p="$3">
 						{!showResults ? (
-							<Text mb="3">{getTermFromDictionary('en', 'self_registration_message')}</Text>
+							<Text mb="$3" color={textColor}>{getTermFromDictionary('en', 'self_registration_message')}</Text>
 						) : null}
 						{showResults ? (
 							<>
 								{results.success === true ? (
-									<Text mb="3">{getTermFromDictionary('en', 'self_registration_success')}</Text>
+									<Text mb="$3" color={textColor}>{getTermFromDictionary('en', 'self_registration_success')}</Text>
 								) : (
-									<Text mb="3">{getTermFromDictionary('en', 'self_registration_error')}</Text>
+									<Text mb="$3" color={textColor}>{getTermFromDictionary('en', 'self_registration_error')}</Text>
 								)}
 
 								{results.message ? (
-									<Text mb="3">{results.message}</Text>
+									<Text mb="$3" color={textColor}>{results.message}</Text>
 								) : null}
 
 								{results.barcode ? (
-									<Text mb="3">Your library card is <Text bold>{results.barcode}</Text></Text>
+									<Text mb="$3" color={textColor}>Your library card is <Text bold>{results.barcode}</Text></Text>
 								) : null}
 
 								{results.username ? (
-									<Text mb="3">Your username is <Text bold>{results.username}</Text></Text>
+									<Text mb="$3" color={textColor}>Your username is <Text bold>{results.username}</Text></Text>
 								) : null}
 
 								{results.password ? (
-									<Text mb="3">Your initial password is <Text bold>{results.password}</Text></Text>
+									<Text mb="$3" color={textColor}>Your initial password is <Text bold>{results.password}</Text></Text>
 								) : null}
 
 								{results.requirePinReset ? (
-									<Text mb="3">To login to the catalog, you must reset your PIN.</Text>
+									<Text mb="$3" color={textColor}>To login to the catalog, you must reset your PIN.</Text>
 								) : null}
 
-								<Button colorScheme="secondary" variant="outline" onPress={() => {
+								<Button borderColor={theme['colors']['secondary']['500']} variant="outline" onPress={() => {
 									navigation.goBack();
 									setShowResults(false);
 									setResults('');
 								}}>
-									{getTermFromDictionary('en', 'close_window')}
+									<ButtonText color={theme['colors']['secondary']['500']}>{getTermFromDictionary('en', 'close_window')}</ButtonText>
 								</Button>
 							</>
 						) : (
 							<>
 								{getFields()}
-								<Button.Group pt={3} pb={5}>
+								<ButtonGroup pt="$3" pb="$5">
 									<Button
-										colorScheme="secondary"
+										bgColor={theme['colors']['secondary']['500']}
 										isLoading={isSubmitting}
 										isLoadingText="Registering..."
 										onPress={() => {
 											setIsSubmitting(true);
 											handleSubmission();
 										}}>
-										{getTermFromDictionary('en', 'register')}
+										<ButtonText color={theme['colors']['secondary']['500-text']}>{getTermFromDictionary('en', 'register')}</ButtonText>
 									</Button>
-									<Button colorScheme="secondary" variant="outline" onPress={() => navigation.goBack()}>
-										{getTermFromDictionary('en', 'cancel')}
+									<Button borderColor={theme['colors']['secondary']['500']} variant="outline" onPress={() => navigation.goBack()}>
+										<ButtonText color={theme['colors']['secondary']['500']}>{getTermFromDictionary('en', 'cancel')}</ButtonText>
 									</Button>
-								</Button.Group>
+								</ButtonGroup>
 							</>
 						)}
 					</Box>

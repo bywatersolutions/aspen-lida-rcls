@@ -65,11 +65,11 @@ const app_config = {
      slug: app['slug'],
      scheme: app['scheme'],
      owner: owner['expoProjectOwner'],
-     privacy: 'public',
      platforms: ['ios', 'android'],
      version: version['version'],
-     sdkVersion: '52.0.0',
+     sdkVersion: '53.0.0',
      newArchEnabled: false,
+     userInterfaceStyle: 'automatic',
      orientation: 'default',
      icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
      updates: {
@@ -84,7 +84,6 @@ const app_config = {
           resizeMode: 'contain',
           backgroundColor: app['background'],
      },
-     jsEngine: 'hermes',
      assetBundlePatterns: ['**/*'],
      ios: {
           buildNumber: build['build'],
@@ -101,7 +100,6 @@ const app_config = {
                NSCalendarsUsageDescription: 'This app can add library events to your calendar',
                NSRemindersUsageDescription: 'This app can add library events to your reminders',
           },
-          jsEngine: 'jsc',
           config: {
                googleMapsApiKey: owner['googleApiKeyApple'],
                usesNonExemptEncryption: false,
@@ -143,6 +141,7 @@ const app_config = {
                     apiKey: owner['googleApiKeyAndroid'],
                },
           },
+          edgeToEdgeEnabled: true
      },
      notification: {
           icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appNotification&slug=' + app['slug'],
@@ -197,6 +196,9 @@ const app_config = {
                     },
                },
           ],
+         [
+             'expo-web-browser'
+         ]
      ],
 };
 

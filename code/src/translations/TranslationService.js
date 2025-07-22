@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { create } from 'apisauce';
 import _ from 'lodash';
 import moment from 'moment';
-import { Box, Button, Icon, Menu, Pressable } from 'native-base';
+import { Box, Button, ButtonText, ButtonIcon, Menu, MenuItem, MenuItemLabel, Pressable } from '@gluestack-ui/themed';
 import React from 'react';
 import { LanguageContext, LibrarySystemContext } from '../context/initialContext';
 import { saveLanguage } from '../util/api/user';
@@ -19,11 +19,12 @@ export const LanguageSwitcher = () => {
      const [label, setLabel] = React.useState(getLanguageDisplayName(language, languages));
 
      const changeLanguage = async (val) => {
-          await saveLanguage(val, library.baseUrl).then(async (result) => {
+          const tmp = val.values().next().value;
+          await saveLanguage(tmp, library.baseUrl).then(async (result) => {
                if (result) {
-                    updateLanguage(val);
-                    updateLanguageDisplayName(getLanguageDisplayName(val, languages));
-                    await getTranslatedTermsForUserPreferredLanguage(val, library.baseUrl).then(() => {
+                    updateLanguage(tmp);
+                    updateLanguageDisplayName(getLanguageDisplayName(tmp, languages));
+                    await getTranslatedTermsForUserPreferredLanguage(tmp, library.baseUrl).then(() => {
                          updateDictionary(translationsLibrary);
                     });
                } else {
@@ -37,26 +38,27 @@ export const LanguageSwitcher = () => {
                <Box>
                     <Menu
                          closeOnSelect
+                         placement="top"
                          w="190"
+                         selectedKeys={language} selectionMode="single" onSelectionChange={(val) => changeLanguage(val)}
                          trigger={(triggerProps) => {
                               return (
-                                   <Pressable {...triggerProps}>
-                                        <Button size="sm" variant="ghost" colorScheme="secondary" leftIcon={<Icon as={MaterialIcons} name="language" size="xs" />} {...triggerProps}>
-                                             {languageDisplayName}
-                                        </Button>
-                                   </Pressable>
+                                   <Button size="sm" variant="link" colorScheme="secondary" {...triggerProps}>
+                                        <ButtonIcon as={MaterialIcons} name="language" />
+                                        <ButtonText>{languageDisplayName}</ButtonText>
+                                   </Button>
                               );
                          }}>
                          {_.isArray(languages) ? (
-                              <Menu.OptionGroup defaultValue={language} title="Select a Language" type="radio" onChange={(val) => changeLanguage(val)}>
+                              <>
                                    {languages.map((language, index) => {
                                         return (
-                                             <Menu.ItemOption key={index} value={language.code}>
-                                                  {language.displayName}
-                                             </Menu.ItemOption>
+                                             <MenuItem key={language.code} textValue={language.code}>
+                                                  <MenuItemLabel>{language.displayName}</MenuItemLabel>
+                                             </MenuItem>
                                         );
                                    })}
-                              </Menu.OptionGroup>
+                              </>
                          ) : null}
                     </Menu>
                </Box>

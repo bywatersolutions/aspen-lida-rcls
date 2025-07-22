@@ -1,6 +1,34 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import _ from 'lodash';
-import { Actionsheet, Box, Button, CheckIcon, CloseIcon, FormControl, HStack, Icon, Pressable, Select, VStack } from 'native-base';
+import {
+     ActionsheetItem,
+     ActionsheetItemText,
+     Box,
+     Button,
+     ButtonGroup,
+     ButtonText,
+     ChevronDownIcon,
+     CloseIcon,
+     FormControl,
+     FormControlLabel,
+     FormControlLabelText,
+     HStack,
+     Icon,
+     Pressable,
+     Select,
+     SelectTrigger,
+     SelectInput,
+     SelectIcon,
+     SelectPortal,
+     SelectBackdrop,
+     SelectContent,
+     SelectDragIndicatorWrapper,
+     SelectDragIndicator,
+     SelectItem,
+     VStack,
+     Text,
+     ActionsheetIcon,
+} from '@gluestack-ui/themed';
 import React from 'react';
 import { Platform } from 'react-native';
 import Modal from 'react-native-modal';
@@ -10,7 +38,7 @@ import { changeHoldPickUpLocation } from '../../../util/accountActions';
 import {SelectExistingHoldSubLocation} from './SelectExistingHoldSubLocation';
 
 export const SelectPickupLocation = (props) => {
-     const { locations, sublocations, onClose, currentPickupId, holdId, userId, libraryContext, holdsContext, resetGroup, language } = props;
+     const { locations, sublocations, onClose, currentPickupId, holdId, userId, libraryContext, holdsContext, resetGroup, language, textColor, colorMode, theme } = props;
      let pickupLocation = _.findIndex(locations, function (o) {
           return o.locationId === currentPickupId;
      });
@@ -38,13 +66,15 @@ export const SelectPickupLocation = (props) => {
 
      return (
           <>
-               <Actionsheet.Item
-                    startIcon={<Icon as={Ionicons} name="location" color="trueGray.400" mr="1" size="6" />}
+               <ActionsheetItem
                     onPress={() => {
                          setShowModal(true);
                     }}>
-                    {getTermFromDictionary(language, 'change_location')}
-               </Actionsheet.Item>
+                    <ActionsheetIcon>
+                         <Icon as={Ionicons} name="location" mr="$1" size="md" />
+                    </ActionsheetIcon>
+                    <ActionsheetItemText>{getTermFromDictionary(language, 'change_location')}</ActionsheetItemText>
+               </ActionsheetItem>
                <Modal
                     isVisible={showModal}
                     avoidKeyboard={true}
@@ -52,107 +82,89 @@ export const SelectPickupLocation = (props) => {
                          setShowModal(false);
                     }}>
                     <Box
-                         bgColor="muted.50"
+                         bgColor={colorMode === 'light' ? theme['colors']['muted']['50'] : theme['colors']['muted']['800']}
                          rounded="md"
-                         p={1}
-                         _text={{ color: 'text.900' }}
-                         _dark={{
-                              bg: 'muted.800',
-                              _text: { color: 'text.50' },
-                         }}>
-                         <VStack space={3}>
+                         p="$1">
+                         <VStack space="sm">
                               <HStack
-                                   p={4}
-                                   borderBottomWidth="1"
-                                   bg="muted.50"
+                                   bgColor={colorMode === 'light' ? theme['colors']['muted']['50'] : theme['colors']['muted']['800']}
+                                   p="$4"
+                                   borderBottomWidth="$1"
+                                   borderColor={colorMode === 'light' ? theme['colors']['muted']['300'] : theme['colors']['muted']['700']}
                                    justifyContent="space-between"
-                                   alignItems="flex-start"
-                                   borderColor="muted.300"
-                                   _dark={{
-                                        bg: 'muted.800',
-                                        borderColor: 'muted.700',
-                                   }}>
-                                   <Box
-                                        _text={{
-                                             color: 'text.900',
-                                             fontSize: 'md',
-                                             fontWeight: 'semibold',
-                                             lineHeight: 'sm',
-                                        }}
-                                        _dark={{
-                                             _text: { color: 'text.50' },
-                                        }}>
-                                        {getTermFromDictionary(language, 'change_hold_location')}
+                                   alignItems="flex-start">
+                                   <Box>
+                                        <Text bold color={textColor}>{getTermFromDictionary(language, 'change_hold_location')}</Text>
                                    </Box>
                                    <Pressable onPress={() => setShowModal(false)}>
                                         <CloseIcon
                                              zIndex="1"
-                                             colorScheme="coolGray"
+                                             color={textColor}
                                              p="2"
                                              bg="transparent"
                                              borderRadius="sm"
-                                             _icon={{
-                                                  color: 'muted.500',
-                                                  size: '4',
-                                             }}
-                                             _dark={{
-                                                  _icon: { color: 'muted.400' },
-                                                  _hover: { bg: 'muted.700' },
-                                                  _pressed: { bg: 'muted.600' },
-                                             }}
                                         />
                                    </Pressable>
                               </HStack>
-                              <Box pl={4} pr={4} _text={{ color: 'text.900' }} _hover={{ bg: 'muted.200' }} _pressed={{ bg: 'muted.300' }} _dark={{ _text: { color: 'text.50' } }}>
+                              <Box pl="$4" pr="$4" _text={{ color: 'text.900' }} _hover={{ bg: 'muted.200' }} _pressed={{ bg: 'muted.300' }} _dark={{ _text: { color: 'text.50' } }}>
                                    <FormControl>
-                                        <FormControl.Label>{getTermFromDictionary(language, 'select_new_pickup')}</FormControl.Label>
+                                        <FormControlLabel><FormControlLabelText>{getTermFromDictionary(language, 'select_new_pickup')}</FormControlLabelText></FormControlLabel>
                                         <Select
-                                             isReadOnly={Platform.OS === 'android'}
                                              name="pickupLocations"
                                              selectedValue={location}
                                              minWidth="200"
                                              accessibilityLabel={getTermFromDictionary(language, 'select_new_pickup')}
-                                             _selectedItem={{
-                                                  bg: 'tertiary.300',
-                                                  endIcon: <CheckIcon size="5" />,
-                                             }}
-                                             mt={1}
-                                             mb={3}
+                                             mt="$1"
+                                             mb="$3"
                                              _actionSheet={{
                                                   useRNModal: Platform.OS === 'ios',
                                              }}
                                              onValueChange={(itemValue) => setLocation(itemValue)}>
-                                             {locations.map((item, index) => {
-                                                  const locationId = item.locationId;
-                                                  const code = item.code;
-                                                  const id = locationId.concat('_', code);
-                                                  return <Select.Item value={id} label={item.name} />;
-                                             })}
+
+                                             <SelectTrigger variant="outline" size="md">
+                                                  <SelectInput color={textColor} placeholder="Select option" />
+                                                  <SelectIcon mr="$3">
+                                                       <Icon color={textColor} as={ChevronDownIcon} />
+                                                  </SelectIcon>
+                                             </SelectTrigger>
+                                             <SelectPortal zIndex={1000}>
+                                                  <SelectBackdrop />
+                                                  <SelectContent>
+                                                       <SelectDragIndicatorWrapper>
+                                                            <SelectDragIndicator />
+                                                       </SelectDragIndicatorWrapper>
+                                                       {locations.map((item, index) => {
+                                                            const locationId = item.locationId;
+                                                            const code = item.code;
+                                                            const id = locationId.concat('_', code);
+                                                            return <SelectItem value={id} label={item.name} />;
+                                                       })}
+                                                  </SelectContent>
+                                             </SelectPortal>
                                         </Select>
                                    </FormControl>
                               </Box>
                               <SelectExistingHoldSubLocation location={location} sublocations={sublocations} language={language} activeSublocation={activeSublocation} setActiveSublocation={setActiveSublocation}/>
-                              <Button.Group
-                                   p={4}
+                              <ButtonGroup
+                                   p="$4"
                                    flexDirection="row"
                                    justifyContent="flex-end"
                                    flexWrap="wrap"
-                                   bg="muted.50"
-                                   borderColor="muted.300"
-                                   borderTopWidth="1"
-                                   _dark={{
-                                        bg: 'muted.800',
-                                        borderColor: 'muted.700',
-                                   }}>
+                                   bgColor={colorMode === 'light' ? theme['colors']['muted']['50'] : theme['colors']['muted']['800']}
+                                   borderTopWidth="$1"
+                                   borderColor={colorMode === 'light' ? theme['colors']['muted']['300'] : theme['colors']['muted']['700']}
+                                   >
                                    <Button
                                         variant="outline"
+                                        borderColor={theme['colors']['primary']['500']}
                                         onPress={() => {
                                              setShowModal(false);
                                         }}>
-                                        {getTermFromDictionary(language, 'cancel')}
+                                        <ButtonText color={theme['colors']['primary']['500']}>{getTermFromDictionary(language, 'cancel')}</ButtonText>
                                    </Button>
                                    <Button
                                         isLoading={loading}
+                                        bgColor={theme['colors']['primary']['500']}
                                         isLoadingText={getTermFromDictionary(language, 'updating', true)}
                                         onPress={() => {
                                              setLoading(true);
@@ -163,9 +175,9 @@ export const SelectPickupLocation = (props) => {
                                                   setLoading(false);
                                              });
                                         }}>
-                                        {getTermFromDictionary(language, 'change_location')}
+                                        <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'change_location')}</ButtonText>
                                    </Button>
-                              </Button.Group>
+                              </ButtonGroup>
                          </VStack>
                     </Box>
                </Modal>

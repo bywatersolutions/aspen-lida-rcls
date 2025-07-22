@@ -1,19 +1,16 @@
 import React from 'react';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Actionsheet, Icon, useToken, useColorModeValue } from 'native-base';
+import { ActionsheetIcon, ActionsheetItem, ActionsheetItemText, Icon, useToken } from '@gluestack-ui/themed';
 import { LanguageContext } from '../../../context/initialContext';
 import { freezeHold, freezeHolds } from '../../../util/accountActions';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 export const SelectThawDate = (props) => {
-     const { freezingLabel, freezeLabel, label, libraryContext, onClose, freezeId, recordId, source, userId, resetGroup, isOpen } = props;
+     const { freezingLabel, freezeLabel, label, libraryContext, onClose, freezeId, recordId, source, userId, resetGroup, showActionsheet, textColor, colorMode } = props;
      let data = props.data;
      const { language } = React.useContext(LanguageContext);
      const [loading, setLoading] = React.useState(false);
-
-     const textColor = useToken('colors', useColorModeValue('text.500', 'text.50'));
-     const colorMode = useColorModeValue(false, true);
 
      let actionLabel = freezeLabel;
      if (label) {
@@ -56,9 +53,12 @@ export const SelectThawDate = (props) => {
 
      return (
           <>
-               <Actionsheet.Item startIcon={data ? null : <Icon as={MaterialIcons} name="pause" color="trueGray.400" mr="1" size="6" />} onPress={showDatePicker}>
-                    {actionLabel}
-               </Actionsheet.Item>
+               <ActionsheetItem onPress={showDatePicker}>
+                    {data ? null : <ActionsheetIcon>
+                         <Icon as={MaterialIcons} name="pause" mr="$1" size="md" />
+                    </ActionsheetIcon> }
+                    <ActionsheetItemText>{actionLabel}</ActionsheetItemText>
+               </ActionsheetItem>
                <DateTimePickerModal isVisible={isDatePickerVisible} date={date} mode="date" onConfirm={onSelectDate} onCancel={hideDatePicker} isDarkModeEnabled={colorMode} minimumDate={today} textColor={textColor} confirmTextIOS={loading ? freezingLabel : actionLabel} />
           </>
      );

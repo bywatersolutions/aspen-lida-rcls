@@ -1,6 +1,26 @@
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import _ from 'lodash';
-import { Box, Button, Center, FlatList, HStack, Icon, Image, Input, Modal, Pressable, Text, VStack } from 'native-base';
+import {
+     Box,
+     Button,
+     ButtonText,
+     ButtonIcon,
+     Center,
+     FlatList,
+     HStack,
+     Icon,
+     Image,
+     Input,
+     InputField,
+     Modal,
+     ModalContent,
+     ModalHeader,
+     ModalCloseButton,
+     Pressable,
+     Text,
+     Heading,
+     VStack, ModalBackdrop, CloseIcon, ModalBody, InputIcon, InputSlot,
+} from '@gluestack-ui/themed';
 import React from 'react';
 import { Platform } from 'react-native';
 import { PermissionsPrompt } from '../../components/PermissionsPrompt';
@@ -9,9 +29,12 @@ import { PermissionsPrompt } from '../../components/PermissionsPrompt';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { PATRON } from '../../util/loadPatron';
 import { useKeyboard } from '../../util/useKeyboard';
+import { ThemeContext } from '../../context/initialContext';
+import { XIcon } from 'lucide-react-native';
 
 export const SelectYourLibrary = (payload) => {
      const isKeyboardOpen = useKeyboard();
+     const { theme, textColor, colorMode } = React.useContext(ThemeContext);
      const { isCommunity, showModal, setShowModal, updateSelectedLibrary, selectedLibrary, shouldRequestPermissions, permissionRequested, libraries, allLibraries, setShouldRequestPermissions } = payload;
      const [query, setQuery] = React.useState('');
 
@@ -59,33 +82,39 @@ export const SelectYourLibrary = (payload) => {
 
      return (
           <Center>
-               <Button onPress={() => setShowModal(true)} colorScheme="primary" m={5} size="md" startIcon={<Icon as={MaterialIcons} name="place" size={5} />}>
-                    {selectedLibrary?.name ? selectedLibrary.name : getTermFromDictionary('en', 'select_your_library')}
+               <Button onPress={() => setShowModal(true)} m="$5" size="md" bgColor={theme['colors']['primary']['500']}>
+                    <ButtonIcon as={MaterialIcons} name="place" mr="$1" color={theme['colors']['primary']['500-text']} />
+                    <ButtonText color={theme['colors']['primary']['500-text']}>{selectedLibrary?.name ? selectedLibrary.name : getTermFromDictionary('en', 'select_your_library')}</ButtonText>
                </Button>
                <Modal isOpen={showModal} size="lg" avoidKeyboard onClose={() => setShowModal(false)} pb={Platform.OS === 'android' && isKeyboardOpen ? '50%' : '0'}>
-                    <Modal.Content bg="warmGray.50" _dark={{ bg: 'coolGray.800' }} maxH="350">
-                         <Modal.CloseButton />
-                         <Modal.Header>{getTermFromDictionary('en', 'find_your_library')}</Modal.Header>
-                         <Box bg="warmGray.50" _dark={{ bg: 'coolGray.800' }} p={2} pb={query ? 0 : 5}>
-                              <Input
-                                   variant="filled"
-                                   size="lg"
-                                   autoCorrect={false}
-                                   status="info"
-                                   placeholder={getTermFromDictionary('en', 'search')}
-                                   value={query}
-                                   onChangeText={(text) => setQuery(text)}
-                                   InputRightElement={
-                                        query ? (
-                                             <Pressable onPress={() => clearSearch()}>
-                                                  <Icon as={MaterialCommunityIcons} name="close-circle" size={5} mr="2" />
-                                             </Pressable>
-                                        ) : null
-                                   }
-                              />
+                    <ModalBackdrop />
+                    <ModalContent bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']} maxH="350">
+                         <ModalHeader borderBottomWidth="$1" borderBottomColor={colorMode === 'light' ? theme['colors']['warmGray']['300'] : theme['colors']['coolGray']['500']}>
+                              <Heading size="md" color={textColor}>{getTermFromDictionary('en', 'find_your_library')}</Heading>
+                              <ModalCloseButton hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}>
+                                   <Icon as={CloseIcon} color={textColor} />
+                              </ModalCloseButton>
+                         </ModalHeader>
+                         <ModalBody mt="$3">
+                         <Box bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']} p="$2" pb={query ? 0 : 5}>
+                              <Input>
+                                   <InputField variant="filled"
+                                               size="lg"
+                                               autoCorrect={false}
+                                               status="info"
+                                               placeholder={getTermFromDictionary('en', 'search')}
+                                               value={query}
+                                               onChangeText={(text) => setQuery(text)}
+                                               color={textColor}
+                                   />
+                                   {query ? <InputSlot onPress={() => clearSearch()}>
+                                        <InputIcon as={MaterialCommunityIcons} name="close-circle" mr="$2" color={textColor} />
+                                   </InputSlot> : null}
+                              </Input>
                          </Box>
-                         <FlatList keyboardShouldPersistTaps="handled" keyExtractor={(item, index) => index.toString()} renderItem={({ item }) => <Item data={item} isCommunity={isCommunity} setShowModal={setShowModal} updateSelectedLibrary={updateSelectedLibrary} />} data={FilteredLibraries(libraries)} />
-                    </Modal.Content>
+                         <FlatList keyboardShouldPersistTaps="handled" keyExtractor={(item, index) => index.toString()} renderItem={({ item }) => <Item data={item} isCommunity={isCommunity} setShowModal={setShowModal} updateSelectedLibrary={updateSelectedLibrary} textColor={textColor} colorMode={colorMode} theme={theme} />} data={FilteredLibraries(libraries)} />
+                         </ModalBody>
+                    </ModalContent>
                </Modal>
           </Center>
      );
@@ -94,7 +123,7 @@ export const SelectYourLibrary = (payload) => {
 const Item = (data) => {
      const library = data.data;
      const libraryIcon = library.favicon;
-     const { isCommunity, setShowModal, updateSelectedLibrary } = data;
+     const { isCommunity, setShowModal, updateSelectedLibrary, textColor, colorMode, theme } = data;
 
      const handleSelect = () => {
           updateSelectedLibrary(library);
@@ -102,46 +131,29 @@ const Item = (data) => {
      };
 
      return (
-          <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" onPress={handleSelect} pl="4" pr="5" py="2">
-               <HStack space={3} alignItems="center">
+          <Pressable borderBottomWidth="$1" borderBottomColor={colorMode === 'light' ? theme['colors']['warmGray']['300'] : theme['colors']['coolGray']['500']} onPress={handleSelect} pl="$4" pr="$5" py="$2">
+               <HStack space="$5" alignItems="center">
                     {libraryIcon ? (
                          <Image
                               key={library.name}
-                              borderRadius={100}
                               source={{ uri: libraryIcon }}
                               fallbackSource={require('../../themes/default/aspenLogo.png')}
-                              bg="warmGray.200"
-                              _dark={{ bgColor: 'coolGray.800' }}
-                              size={{
-                                   base: '25px',
-                              }}
                               alt={library.name}
+                              size="xs"
+                              borderRadius="$full"
                          />
                     ) : (
                          <Box
-                              borderRadius={100}
-                              bg="warmGray.200"
-                              _dark={{ bgColor: 'coolGray.800' }}
-                              size={{
-                                   base: '25px',
-                              }}
+                              borderRadius="$full"
+                              size="xs"
                          />
                     )}
-                    <VStack>
-                         <Text
-                              bold
-                              fontSize={{
-                                   base: 'sm',
-                                   lg: 'md',
-                              }}>
+                    <VStack ml="$3">
+                         <Text bold size="sm" color={textColor}>
                               {library.name}
                          </Text>
                          {isCommunity ? (
-                              <Text
-                                   fontSize={{
-                                        base: 'xs',
-                                        lg: 'sm',
-                                   }}>
+                              <Text size="sm" color={textColor}>
                                    {library.librarySystem}
                               </Text>
                          ) : null}

@@ -1,9 +1,26 @@
 import { create } from 'apisauce';
 import _ from 'lodash';
-import { Button, Center, FormControl, Input, Modal, Text } from 'native-base';
+import {
+     Button,
+     ButtonGroup,
+     ButtonText,
+     Center,
+     FormControl,
+     FormControlLabel,
+     FormControlLabelText,
+     Input,
+     InputField,
+     Modal,
+     ModalContent,
+     ModalHeader,
+     ModalBody,
+     ModalFooter,
+     Text,
+     ModalBackdrop, Icon, CloseIcon, ModalCloseButton,
+} from '@gluestack-ui/themed';
 import React from 'react';
 import { Platform } from 'react-native';
-import { LibrarySystemContext } from '../../context/initialContext';
+import { LibrarySystemContext, ThemeContext } from '../../context/initialContext';
 import { getTermFromDictionary, getTranslation, getTranslationsWithValues } from '../../translations/TranslationService';
 import { createAuthTokens, getHeaders, stripHTML } from '../../util/apiAuth';
 import { GLOBALS } from '../../util/globals';
@@ -12,6 +29,7 @@ import { useKeyboard } from '../../util/useKeyboard';
 
 export const ForgotBarcode = (props) => {
      const isKeyboardOpen = useKeyboard();
+     const { theme, textColor, colorMode }= React.useContext(ThemeContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { usernameLabel, showForgotBarcodeModal, setShowForgotBarcodeModal } = props;
      const [isProcessing, setIsProcessing] = React.useState(false);
@@ -97,47 +115,50 @@ export const ForgotBarcode = (props) => {
 
      return (
           <Center>
-               <Button variant="ghost" onPress={() => setShowForgotBarcodeModal(true)} colorScheme="primary">
-                    <Text color="primary.600">{buttonLabel}</Text>
+               <Button variant="link" onPress={() => setShowForgotBarcodeModal(true)}>
+                    <ButtonText color={theme['colors']['primary']['500']}>{buttonLabel}</ButtonText>
                </Button>
                <Modal isOpen={showForgotBarcodeModal} size="md" avoidKeyboard onClose={() => setShowForgotBarcodeModal(false)} pb={Platform.OS === 'android' && isKeyboardOpen ? '50%' : '0'}>
-                    <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }}>
-                         <Modal.CloseButton onPress={closeWindow} />
-                         <Modal.Header>{modalTitle}</Modal.Header>
-                         <Modal.Body>
+                    <ModalBackdrop />
+                    <ModalContent bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}>
+                         <ModalHeader>
+                              <Heading size="md" color={textColor}>{modalTitle}</Heading>
+                              <ModalCloseButton hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}>
+                                   <Icon as={CloseIcon} color={textColor} />
+                              </ModalCloseButton>
+                         </ModalHeader>
+                         <ModalBody>
                               {showResults && !results.success ? (
                                    <>
-                                        <Text>{stripHTML(results.message)}</Text>
-                                        <Button colorScheme="primary" onPress={resetWindow}>
-                                             {getTermFromDictionary('en', 'try_again')}
+                                        <Text color={textColor}>{stripHTML(results.message)}</Text>
+                                        <Button bgColor={theme['colors']['primary']['500']} onPress={resetWindow}>
+                                             <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary('en', 'try_again')}</ButtonText>
                                         </Button>
                                    </>
                               ) : showResults ? (
-                                   <Text>{stripHTML(results.message)}</Text>
+                                   <Text color={textColor}>{stripHTML(results.message)}</Text>
                               ) : (
                                    <>
-                                        <Text>{modalBody}</Text>
-                                        <FormControl.Label
-                                             _text={{
-                                                  fontSize: 'sm',
-                                                  fontWeight: 600,
-                                             }}>
-                                             {fieldLabel}
-                                        </FormControl.Label>
-                                        <Input id="phoneNumber" variant="filled" size="xl" returnKeyType="done" enterKeyHint="done" onChangeText={(text) => setPhoneNumber(text)} onSubmitEditing={() => initiateForgotBarcode()} textContentType="telephoneNumber" />
+                                        <Text color={textColor}>{modalBody}</Text>
+                                        <FormControl>
+                                             <FormControlLabel>
+                                                  <FormControlLabelText fontSize="sm" color={textColor}>{fieldLabel}</FormControlLabelText>
+                                             </FormControlLabel>
+                                             <Input><InputField id="phoneNumber" variant="filled" size="xl" returnKeyType="done" enterKeyHint="done" onChangeText={(text) => setPhoneNumber(text)} onSubmitEditing={() => initiateForgotBarcode()} color={textColor} textContentType="telephoneNumber"/></Input>
+                                        </FormControl>
                                    </>
                               )}
-                         </Modal.Body>
-                         <Modal.Footer>
-                              <Button.Group space={2}>
+                         </ModalBody>
+                         <ModalFooter>
+                              <ButtonGroup space="$2">
                                    {showResults ? (
-                                        <Button variant="ghost" onPress={closeWindow}>
-                                             {getTermFromDictionary('en', 'button_ok')}
+                                        <Button variant="link" onPress={closeWindow}>
+                                             <ButtonText color={textColor}>{getTermFromDictionary('en', 'button_ok')}</ButtonText>
                                         </Button>
                                    ) : (
                                         <>
-                                             <Button variant="ghost" onPress={closeWindow}>
-                                                  {getTermFromDictionary('en', 'cancel')}
+                                             <Button variant="link" onPress={closeWindow}>
+                                                  <ButtonText color={textColor}>{getTermFromDictionary('en', 'cancel')}</ButtonText>
                                              </Button>
                                              <Button
                                                   style={{
@@ -145,15 +166,15 @@ export const ForgotBarcode = (props) => {
                                                   }}
                                                   isLoading={isProcessing}
                                                   isLoadingText={getTermFromDictionary('en', 'button_processing', true)}
-                                                  colorScheme="primary"
+                                                  bgColor={theme['colors']['primary']['500']}
                                                   onPress={initiateForgotBarcode}>
-                                                  {modalButtonLabel}
+                                                  <ButtonText color={theme['colors']['primary']['500-text']}>{modalButtonLabel}</ButtonText>
                                              </Button>
                                         </>
                                    )}
-                              </Button.Group>
-                         </Modal.Footer>
-                    </Modal.Content>
+                              </ButtonGroup>
+                         </ModalFooter>
+                    </ModalContent>
                </Modal>
           </Center>
      );

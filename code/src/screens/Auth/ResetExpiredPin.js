@@ -4,7 +4,7 @@ import { create } from 'apisauce';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
-import { AlertDialog, Button, Center, FormControl, Icon, Input, Spinner, Text, VStack, WarningOutlineIcon } from 'native-base';
+import { AlertDialog, Button, Center, FormControl, Icon, Input, Spinner, Text, VStack, WarningOutlineIcon } from '@gluestack-ui/themed-native-base';
 import React from 'react';
 import { popAlert } from '../../components/loadError';
 import { AuthContext } from '../../components/navigation';

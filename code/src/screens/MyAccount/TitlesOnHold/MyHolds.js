@@ -1,14 +1,28 @@
-import { MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { Box, Button, Center, Checkbox, CheckIcon, FormControl, Heading, HStack, Icon, ScrollView, Select, Text } from 'native-base';
+import {
+     Box,
+     Button,
+     ButtonText,
+     Center,
+     Checkbox,
+     CheckboxGroup, ChevronDownIcon,
+     FormControl,
+     Heading,
+     HStack,
+     Icon,
+     ScrollView,
+     Select, SelectBackdrop, SelectDragIndicator, SelectDragIndicatorWrapper, SelectIcon, SelectInput,
+     SelectTrigger, SelectItem, SelectContent, SelectPortal,
+     Text, AlertIcon, InfoIcon, AlertText, Alert,
+} from '@gluestack-ui/themed';
 import React from 'react';
-import { Platform, SafeAreaView, SectionList } from 'react-native';
+import { SafeAreaView, SectionList } from 'react-native';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { DisplayMessage, DisplaySystemMessage } from '../../../components/Notifications';
+import { DisplaySystemMessage } from '../../../components/Notifications';
 import { HoldsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, ThemeContext, UserContext } from '../../../context/initialContext';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import {getPatronCheckedOutItems, getPatronHolds, sortHolds, setSortPreferences} from '../../../util/api/user';
@@ -223,16 +237,16 @@ export const MyHolds = () => {
      const noHolds = (title) => {
           if (title === 'Pending') {
                return (
-                    <Center safeArea={2}>
-                         <Text bold fontSize="lg">
+                    <Center p="$2">
+                         <Text color={textColor} bold fontSize="$lg">
                               {getTermFromDictionary(language, 'pending_holds_none')}
                          </Text>
                     </Center>
                );
           } else {
                return (
-                    <Center safeArea={2}>
-                         <Text bold fontSize="lg">
+                    <Center p="$2">
+                         <Text color={textColor} bold fontSize="$lg">
                               {getTermFromDictionary(language, 'holds_ready_for_pickup_none')}
                          </Text>
                     </Center>
@@ -271,41 +285,47 @@ export const MyHolds = () => {
           } else if (userHoldPendingSortMethod === 'sortTitle') {
                pendingSortLength = 8 * sortBy.title.length + 80;
           }
-
+          
           if (section === 'pending') {
                if (showSelectOptions) {
                     return (
-                         <Box safeArea={2}>
+                         <Box p="$2">
                               <ScrollView horizontal>
-                                   <HStack space={2}>
+                                   <HStack space="sm">
                                         <FormControl w={pendingSortLength}>
                                              <Select
-                                                  isReadOnly={Platform.OS === 'android'}
-                                                  _dark={{
-                                                       borderWidth: '1',
-                                                       borderColor: 'gray.400',
-                                                  }}
                                                   name="sortBy"
                                                   selectedValue={userHoldPendingSortMethod}
                                                   accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
-                                                  _selectedItem={{
-                                                       bg: 'tertiary.300',
-                                                       endIcon: <CheckIcon size="5" />,
-                                                  }}
                                                   onValueChange={(itemValue) => togglePendingSort(itemValue)}>
-                                                  <Select.Item label={sortBy.title} value="sortTitle" key={0} />
-                                                  <Select.Item label={sortBy.author} value="author" key={1} />
-                                                  <Select.Item label={sortBy.format} value="format" key={2} />
-                                                  <Select.Item label={sortBy.status} value="status" key={3} />
-                                                  <Select.Item label={sortBy.date_placed} value="placed" key={4} />
-                                                  <Select.Item label={sortBy.position} value="position" key={5} />
-                                                  <Select.Item label={sortBy.pickup_location} value="location" key={6} />
-                                                  <Select.Item label={sortBy.library_account} value="libraryAccount" key={7} />
+                                                  <SelectTrigger variant="outline" size="sm" borderWidth={colorMode === 'light' ? '$none' : '$1'}
+                                                                 borderColor={colorMode === 'light' ? '$none' : theme['colors']['gray']['400']}>
+                                                       <SelectInput color={textColor} placeholder="Select option" />
+                                                       <SelectIcon mr="$3">
+                                                            <Icon color={textColor} as={ChevronDownIcon} />
+                                                       </SelectIcon>
+                                                  </SelectTrigger>
+                                                  <SelectPortal>
+                                                       <SelectBackdrop />
+                                                       <SelectContent>
+                                                            <SelectDragIndicatorWrapper>
+                                                                 <SelectDragIndicator />
+                                                            </SelectDragIndicatorWrapper>
+                                                       <SelectItem label={sortBy.title} value="sortTitle" key={0} />
+                                                       <SelectItem label={sortBy.author} value="author" key={1} />
+                                                       <SelectItem label={sortBy.format} value="format" key={2} />
+                                                       <SelectItem label={sortBy.status} value="status" key={3} />
+                                                       <SelectItem label={sortBy.date_placed} value="placed" key={4} />
+                                                       <SelectItem label={sortBy.position} value="position" key={5} />
+                                                       <SelectItem label={sortBy.pickup_location} value="location" key={6} />
+                                                       <SelectItem label={sortBy.library_account} value="libraryAccount" key={7} />
+                                                       </SelectContent>
+                                                  </SelectPortal>
                                              </Select>
                                         </FormControl>
                                         <ManageSelectedHolds language={language} selectedValues={values} onAllDateChange={handleDateChange} selectedReactivationDate={date} resetGroup={resetGroup} />
-                                        <Button size="sm" variant="outline" mr={1} onPress={() => clearGroupValue()}>
-                                             {getTermFromDictionary(language, 'holds_clear_selections')}
+                                        <Button size="sm" variant="outline" mr="$1" onPress={() => clearGroupValue()} borderColor={theme['colors']['primary']['500']}>
+                                             <ButtonText color={theme['colors']['primary']['500']}>{getTermFromDictionary(language, 'holds_clear_selections')}</ButtonText>
                                         </Button>
                                    </HStack>
                               </ScrollView>
@@ -314,32 +334,39 @@ export const MyHolds = () => {
                }
 
                return (
-                    <Box safeArea={2}>
+                    <Box p="$2">
                          <ScrollView horizontal>
-                              <HStack space={2}>
+                              <HStack space="sm">
                                    <FormControl w={pendingSortLength}>
                                         <Select
-                                             _dark={{
-                                                  borderWidth: '1',
-                                                  borderColor: 'gray.400',
-                                             }}
-                                             isReadOnly={Platform.OS === 'android'}
                                              name="sortBy"
                                              selectedValue={userHoldPendingSortMethod}
+                                             defaultValue={userHoldPendingSortMethod}
                                              accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
-                                             _selectedItem={{
-                                                  bg: 'tertiary.300',
-                                                  endIcon: <CheckIcon size="5" />,
-                                             }}
                                              onValueChange={(itemValue) => togglePendingSort(itemValue)}>
-                                             <Select.Item label={sortBy.title} value="sortTitle" key={0} />
-                                             <Select.Item label={sortBy.author} value="author" key={1} />
-                                             <Select.Item label={sortBy.format} value="format" key={2} />
-                                             <Select.Item label={sortBy.status} value="status" key={3} />
-                                             <Select.Item label={sortBy.date_placed} value="placed" key={4} />
-                                             <Select.Item label={sortBy.position} value="position" key={5} />
-                                             <Select.Item label={sortBy.pickup_location} value="location" key={6} />
-                                             <Select.Item label={sortBy.library_account} value="libraryAccount" key={7} />
+                                             <SelectTrigger variant="outline" size="sm" borderWidth={colorMode === 'light' ? '$none' : '$1'}
+                                                            borderColor={colorMode === 'light' ? '$none' : theme['colors']['gray']['400']}>
+                                                  <SelectInput color={textColor} placeholder="Select option" />
+                                                  <SelectIcon mr="$3">
+                                                       <Icon color={textColor} as={ChevronDownIcon} />
+                                                  </SelectIcon>
+                                             </SelectTrigger>
+                                             <SelectPortal>
+                                                  <SelectBackdrop />
+                                                  <SelectContent>
+                                                       <SelectDragIndicatorWrapper>
+                                                            <SelectDragIndicator />
+                                                       </SelectDragIndicatorWrapper>
+                                                       <SelectItem label={sortBy.title} value="sortTitle" key={0} />
+                                                       <SelectItem label={sortBy.author} value="author" key={1} />
+                                                       <SelectItem label={sortBy.format} value="format" key={2} />
+                                                       <SelectItem label={sortBy.status} value="status" key={3} />
+                                                       <SelectItem label={sortBy.date_placed} value="placed" key={4} />
+                                                       <SelectItem label={sortBy.position} value="position" key={5} />
+                                                       <SelectItem label={sortBy.pickup_location} value="location" key={6} />
+                                                       <SelectItem label={sortBy.library_account} value="libraryAccount" key={7} />
+                                                  </SelectContent>
+                                             </SelectPortal>
                                         </Select>
                                    </FormControl>
                                    <ManageAllHolds language={language} data={holds} onDateChange={handleDateChange} selectedReactivationDate={date} resetGroup={resetGroup} />
@@ -372,31 +399,38 @@ export const MyHolds = () => {
 
           if (section === 'ready') {
                return (
-                    <Box safeArea={2}>
+                    <Box p="$2">
                          <ScrollView horizontal>
-                              <HStack space={2}>
+                              <HStack space="sm">
                                    <FormControl w={readySortLength}>
                                         <Select
-                                             _dark={{
-                                                  borderWidth: '1',
-                                                  borderColor: 'gray.400',
-                                             }}
-                                             isReadOnly={Platform.OS === 'android'}
                                              name="sortBy"
                                              selectedValue={userHoldReadySortMethod}
+                                             defaultValue={userHoldReadySortMethod}
                                              accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
-                                             _selectedItem={{
-                                                  bg: 'tertiary.300',
-                                                  endIcon: <CheckIcon size="5" />,
-                                             }}
                                              onValueChange={(itemValue) => toggleReadySort(itemValue)}>
-                                             <Select.Item label={sortBy.title} value="sortTitle" key={0} />
-                                             <Select.Item label={sortBy.author} value="author" key={1} />
-                                             <Select.Item label={sortBy.format} value="format" key={2} />
-                                             <Select.Item label={sortBy.expiration} value="expire" key={3} />
-                                             <Select.Item label={sortBy.date_placed} value="placed" key={4} />
-                                             <Select.Item label={sortBy.pickup_location} value="location" key={5} />
-                                             <Select.Item label={sortBy.library_account} value="libraryAccount" key={6} />
+                                             <SelectTrigger variant="outline" size="sm" borderWidth={colorMode === 'light' ? '$none' : '$1'}
+                                                            borderColor={colorMode === 'light' ? '$none' : theme['colors']['gray']['400']}>
+                                                  <SelectInput color={textColor} placeholder={getTermFromDictionary(language, 'select_sort_method')} />
+                                                  <SelectIcon mr="$3">
+                                                       <Icon color={textColor} as={ChevronDownIcon} />
+                                                  </SelectIcon>
+                                             </SelectTrigger>
+                                             <SelectPortal>
+                                                  <SelectBackdrop />
+                                                  <SelectContent>
+                                                       <SelectDragIndicatorWrapper>
+                                                            <SelectDragIndicator />
+                                                       </SelectDragIndicatorWrapper>
+                                                  <SelectItem label={sortBy.title} value="sortTitle" key={0} />
+                                                  <SelectItem label={sortBy.author} value="author" key={1} />
+                                                  <SelectItem label={sortBy.format} value="format" key={2} />
+                                                  <SelectItem label={sortBy.expiration} value="expire" key={3} />
+                                                  <SelectItem label={sortBy.date_placed} value="placed" key={4} />
+                                                  <SelectItem label={sortBy.pickup_location} value="location" key={5} />
+                                                  <SelectItem label={sortBy.library_account} value="libraryAccount" key={6} />
+                                                  </SelectContent>
+                                             </SelectPortal>
                                         </Select>
                                    </FormControl>
                               </HStack>
@@ -407,51 +441,51 @@ export const MyHolds = () => {
 
           return (
                <Box
-                    safeArea={2}
-                    bgColor="coolGray.100"
-                    borderBottomWidth="1"
-                    _dark={{
-                         borderColor: 'gray.600',
-                         bg: 'coolGray.700',
-                    }}
-                    borderColor="coolGray.200"
+                    p="$2"
+                    bgColor={colorMode === 'light' ? theme['colors']['coolGray']['100'] : theme['colors']['coolGray']['700']}
+                    borderBottomWidth="$1"
+                    borderColor={colorMode === 'light' ? theme['colors']['coolGray']['200'] : theme['colors']['gray']['600']}
                     flexWrap="nowrap">
                     {showSystemMessage()}
                     <ScrollView horizontal>
-                         <HStack space={2}>
+                         <HStack space="sm">
                               <Button
                                    size="sm"
-                                   _dark={{
-                                        borderWidth: '1',
-                                        borderColor: 'gray.400',
-                                   }}
+                                   borderColor={theme['colors']['primary']['500']}
                                    variant="outline"
                                    onPress={() => {
                                         refreshHolds();
                                    }}>
-                                   {getTermFromDictionary(language, 'holds_reload')}
+                                   <ButtonText color={theme['colors']['primary']['500']}>{getTermFromDictionary(language, 'holds_reload')}</ButtonText>
                               </Button>
-                              <FormControl w={250}>
+                              <FormControl w={245}>
                                    <Select
-                                        isReadOnly={Platform.OS === 'android'}
-                                        _dark={{
-                                             borderWidth: '1',
-                                             borderColor: 'gray.400',
-                                        }}
                                         name="holdSource"
                                         selectedValue={holdSource}
+                                        defaultValue={holdSource}
                                         accessibilityLabel="Filter By Source"
-                                        _selectedItem={{
-                                             bg: 'tertiary.300',
-                                             endIcon: <CheckIcon size="5" />,
-                                        }}
                                         onValueChange={(itemValue) => toggleHoldSource(itemValue)}>
-                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_all') + ' (' + (user.numHolds ?? 0) + ')'} value="all" key={0} />
-                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_ils') + ' (' + (user.numHoldsRequestedIls ?? 0) + ')'} value="ils" key={1} />
-                                        {user.isValidForOverdrive ? <Select.Item label={filterByLibby + ' (' + (user.numHoldsOverDrive ?? 0) + ')'} value="overdrive" key={2} /> : null}
-                                        {user.isValidForCloudLibrary ? <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numHolds_cloudLibrary ?? 0) + ')'} value="cloud_library" key={3} /> : null}
-                                        {user.isValidForAxis360 ? <Select.Item label={getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numHolds_axis360 ?? 0) + ')'} value="axis360" key={4} /> : null}
-                                        {user.isValidForPalaceProject ? <Select.Item label={getTermFromDictionary(language, 'filter_by_palace_project') + ' (' + (user.numHolds_PalaceProject ?? 0) + ')'} value="palace_project" key={5} /> : null}
+                                        <SelectTrigger variant="outline" size="sm" borderWidth={colorMode === 'light' ? '$none' : '$1'}
+                                                       borderColor={colorMode === 'light' ? '$none' : theme['colors']['gray']['400']}>
+                                             <SelectInput color={textColor}  placeholder="Filter By Source" />
+                                             <SelectIcon mr="$3">
+                                                  <Icon color={textColor} as={ChevronDownIcon} />
+                                             </SelectIcon>
+                                        </SelectTrigger>
+                                        <SelectPortal>
+                                             <SelectBackdrop />
+                                             <SelectContent>
+                                                  <SelectDragIndicatorWrapper>
+                                                       <SelectDragIndicator />
+                                                  </SelectDragIndicatorWrapper>
+                                                  <SelectItem label={getTermFromDictionary(language, 'filter_by_all') + ' (' + (user.numHolds ?? 0) + ')'} value="all" key={0} />
+                                                  <SelectItem label={getTermFromDictionary(language, 'filter_by_ils') + ' (' + (user.numHoldsRequestedIls ?? 0) + ')'} value="ils" key={1} />
+                                                  {user.isValidForOverdrive ? <SelectItem label={filterByLibby + ' (' + (user.numHoldsOverDrive ?? 0) + ')'} value="overdrive" key={2} /> : null}
+                                                  {user.isValidForCloudLibrary ? <SelectItem label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numHolds_cloudLibrary ?? 0) + ')'} value="cloud_library" key={3} /> : null}
+                                                  {user.isValidForAxis360 ? <SelectItem label={getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numHolds_axis360 ?? 0) + ')'} value="axis360" key={4} /> : null}
+                                                  {user.isValidForPalaceProject ? <SelectItem label={getTermFromDictionary(language, 'filter_by_palace_project') + ' (' + (user.numHolds_PalaceProject ?? 0) + ')'} value="palace_project" key={5} /> : null}
+                                             </SelectContent>
+                                        </SelectPortal>
                                    </Select>
                               </FormControl>
                          </HStack>
@@ -464,19 +498,29 @@ export const MyHolds = () => {
           logDebugMessage("Display Holds section " + title);
           if (title === 'Pending') {
                return (
-                    <Box bgColor="warmGray.50" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bgColor: 'coolGray.800' }} borderColor="coolGray.200" flexWrap="nowrap" maxWidth="100%" safeArea={2}>
-                         <Heading pb={1} pt={3}>
+                    <Box bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['800']} borderBottomWidth="$1" borderColor={colorMode === 'light' ? theme['colors']['coolGray']['200'] : theme['colors']['gray']['600']} flexWrap="nowrap" maxWidth="100%" p="$2">
+                         <Heading pb="$1" pt="$3" color={textColor}>
                               {getTermFromDictionary(language, 'pending_holds')}
                          </Heading>
-                         <DisplayMessage type="info" message={getTermFromDictionary(language, 'pending_holds_message')} />
+                         <Alert action="info" mb="$2">
+                              <AlertIcon as={InfoIcon} mr="$3" />
+                              <AlertText fontSize="$xs">
+                                   {getTermFromDictionary(language, 'pending_holds_message')}
+                              </AlertText>
+                         </Alert>
                          {actionButtons('pending')}
                     </Box>
                );
           } else {
                return (
-                    <Box bgColor="warmGray.50" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bgColor: 'coolGray.800' }} borderColor="coolGray.200" flexWrap="nowrap" maxWidth="100%" safeArea={2}>
-                         <Heading pb={1}>{getTermFromDictionary(language, 'holds_ready_for_pickup')}</Heading>
-                         <DisplayMessage type="info" message={getTermFromDictionary(language, 'holds_ready_for_pickup_message')} />
+                    <Box bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['800']} borderBottomWidth="$1" borderColor={colorMode === 'light' ? theme['colors']['coolGray']['200'] : theme['colors']['gray']['600']} flexWrap="nowrap" maxWidth="100%" p="$2">
+                         <Heading pb="$1" color={textColor}>{getTermFromDictionary(language, 'holds_ready_for_pickup')}</Heading>
+                         <Alert action="info" mb="$2">
+                              <AlertIcon as={InfoIcon} mr="$3" />
+                              <AlertText fontSize="$xs">
+                                   {getTermFromDictionary(language, 'holds_ready_for_pickup_message')}
+                              </AlertText>
+                         </Alert>
                          {actionButtons('ready')}
                     </Box>
                );
@@ -514,7 +558,7 @@ export const MyHolds = () => {
           <SafeAreaView>
                {actionButtons('none')}
                <Box>
-                    <Checkbox.Group
+                    <CheckboxGroup
                          style={{
                               maxWidth: '100%',
                               alignItems: 'center',
@@ -533,6 +577,7 @@ export const MyHolds = () => {
                          }}>
                          {_.isObject(holds) ? (
                               <SectionList
+                                   style={{width: '100%'}}
                                    sections={holds}
                                    renderItem={({ item, section: { title }}) => <MyHold data={item} resetGroup={resetGroup} language={language} pickupLocations={pickupLocations} section={title} key="ready" holdSource={holdSource} />}
                                    stickySectionHeadersEnabled={true}
@@ -542,7 +587,7 @@ export const MyHolds = () => {
                                    keyExtractor={(item, index) => index.toString()}
                               />
                          ) : null}
-                    </Checkbox.Group>
+                    </CheckboxGroup>
                </Box>
           </SafeAreaView>
      );

@@ -1,11 +1,12 @@
 import * as Linking from 'expo-linking';
-import { AlertDialog, Button } from 'native-base';
+import { AlertDialog, AlertDialogBackdrop, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, Button, ButtonGroup, ButtonText, Heading, Text } from '@gluestack-ui/themed';
 import React from 'react';
-import { LanguageContext } from '../context/initialContext';
+import { LanguageContext, ThemeContext } from '../context/initialContext';
 import { getTermFromDictionary } from '../translations/TranslationService';
 
 export const PermissionsPrompt = (data) => {
      const { promptTitle, promptBody, setShouldRequestPermissions, updateStatus } = data;
+     const { textColor, theme, colorMode } = React.useContext(ThemeContext);
      const { language } = React.useContext(LanguageContext);
      const [isOpen, setIsOpen] = React.useState(true);
      const onClose = () => {
@@ -16,25 +17,26 @@ export const PermissionsPrompt = (data) => {
      const cancelRef = React.useRef(null);
      return (
           <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
-               <AlertDialog.Content>
-                    <AlertDialog.Header>{getTermFromDictionary(language, promptTitle)}</AlertDialog.Header>
-                    <AlertDialog.Body>{getTermFromDictionary(language, promptBody)}</AlertDialog.Body>
-                    <AlertDialog.Footer>
-                         <Button.Group space={2}>
-                              <Button variant="unstyled" colorScheme="coolGray" onPress={onClose} ref={cancelRef}>
-                                   {getTermFromDictionary(language, 'permissions_cancel')}
+               <AlertDialogBackdrop />
+               <AlertDialogContent bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}>
+                    <AlertDialogHeader><Heading size="md" color={textColor}>{getTermFromDictionary(language, promptTitle)}</Heading></AlertDialogHeader>
+                    <AlertDialogBody><Text color={textColor}>{getTermFromDictionary(language, promptBody)}</Text></AlertDialogBody>
+                    <AlertDialogFooter>
+                         <ButtonGroup space="md">
+                              <Button bgColor={theme['colors']['coolGray']['200']} onPress={onClose} ref={cancelRef}>
+                                   <ButtonText color={theme['colors']['coolGray']['800']}>{getTermFromDictionary(language, 'permissions_cancel')}</ButtonText>
                               </Button>
                               <Button
-                                   colorScheme="danger"
+                                   bgColor={theme['colors']['danger']['700']}
                                    onPress={() => {
                                         onClose();
                                         Linking.openSettings();
                                    }}>
-                                   {getTermFromDictionary(language, 'permissions_update_settings')}
+                                   <ButtonText color={theme['colors']['white']}>{getTermFromDictionary(language, 'permissions_update_settings')}</ButtonText>
                               </Button>
-                         </Button.Group>
-                    </AlertDialog.Footer>
-               </AlertDialog.Content>
+                         </ButtonGroup>
+                    </AlertDialogFooter>
+               </AlertDialogContent>
           </AlertDialog>
      );
 };

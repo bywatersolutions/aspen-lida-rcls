@@ -1,11 +1,16 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import _ from 'lodash';
-import { Actionsheet, Box, HStack, Icon, Pressable, Text, VStack } from 'native-base';
+import {
+     Actionsheet,
+     ActionsheetContent,
+     ActionsheetItem,
+     ActionsheetItemText, ActionsheetBackdrop, Box, HStack, Icon, Pressable, Text, VStack, ActionsheetIcon,
+} from '@gluestack-ui/themed';
 import React, { useState } from 'react';
 
 // custom components and helper files
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, ThemeContext, UserContext } from '../../../context/initialContext';
 import { getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getRenewalCount, getTitle, isOverdue, willAutoRenew, getCollectionName } from '../../../helpers/item';
 import { navigate, navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
@@ -25,6 +30,7 @@ export const MyCheckout = (props) => {
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
+     const { theme, colorMode, textColor } = React.useContext(ThemeContext);
 
      if (checkoutSource != 'all' && checkoutSource != checkout.source) {
           //console.log("Hiding checkout that is the wrong source " + checkoutSource);
@@ -150,8 +156,8 @@ export const MyCheckout = (props) => {
 
 
      return (
-          <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
-               <HStack space={3} maxW="75%">
+          <Pressable onPress={toggle} borderBottomWidth="$1" borderBottomColor={colorMode === 'light' ? theme['colors']['coolGray']['200'] : theme['colors']['coolGray']['500']} pl="$4" pr="$5" py="$2">
+               <HStack space="sm" maxW="75%">
                     <Image
                          alt={checkout.title}
                          source={url}
@@ -177,32 +183,26 @@ export const MyCheckout = (props) => {
                     </VStack>
                </HStack>
                <Actionsheet isOpen={isOpen} onClose={toggle} size="full">
-                    <Actionsheet.Content>
-                         <Box w="100%" h={60} px={4} justifyContent="center">
-                              <Text
-                                   fontSize="18"
-                                   color="gray.500"
-                                   maxW="100%"
-                                   flexWrap="wrap"
-                                   isTruncated
-                                   _dark={{
-                                        color: 'gray.300',
-                                   }}>
-                                   {getTitle(checkout.title)}
-                              </Text>
-                         </Box>
+                    <ActionsheetBackdrop />
+                    <ActionsheetContent>
+                         <ActionsheetItem h={60} px="$4">
+                              <ActionsheetItemText bold>{checkout.title}</ActionsheetItemText>
+                         </ActionsheetItem>
 						 {checkout.groupedWorkId ? (
-                         <Actionsheet.Item
+                         <ActionsheetItem
                               onPress={() => {
                                    openGroupedWork(checkout.groupedWorkId, checkout.title);
                                    toggle();
                               }}
-                              startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6" />}>
-                              {getTermFromDictionary(language, 'view_item_details')}
-                         </Actionsheet.Item>
+                              >
+                              <ActionsheetIcon>
+                                   <Icon as={MaterialIcons} name="search" mr="$1" size="md" />
+                              </ActionsheetIcon>
+                              <ActionsheetItemText>{getTermFromDictionary(language, 'view_item_details')}</ActionsheetItemText>
+                         </ActionsheetItem>
 						 ): null}
                          {renewMessage ? (
-                              <Actionsheet.Item
+                              <ActionsheetItem
                                    maxW="100%"
                                    isTruncated
                                    isDisabled={canRenew}
@@ -237,12 +237,15 @@ export const MyCheckout = (props) => {
                                              toggle();
                                         });
                                    }}
-                                   startIcon={<Icon as={MaterialIcons} name="autorenew" color="trueGray.400" mr="1" size="6" />}>
-                                   {stripHTML(renewMessage)}
-                              </Actionsheet.Item>
+                                   >
+                                   <ActionsheetIcon>
+                                        <Icon as={MaterialIcons} name="autorenew" mr="$1" size="md" />
+                                   </ActionsheetIcon>
+                                   <ActionsheetItemText>{stripHTML(renewMessage)}</ActionsheetItemText>
+                              </ActionsheetItem>
                          ) : null}
                          {checkout.source === 'overdrive' ? (
-                              <Actionsheet.Item
+                              <ActionsheetItem
                                    isLoading={access}
                                    isLoadingText={getTermFromDictionary(language, 'accessing', true)}
                                    onPress={() => {
@@ -252,18 +255,21 @@ export const MyCheckout = (props) => {
                                              toggle();
                                         });
                                    }}
-                                   startIcon={<Icon as={MaterialIcons} name="book" color="trueGray.400" mr="1" size="6" />}>
-                                   {label}
-                              </Actionsheet.Item>
+                                   >
+                                   <ActionsheetIcon>
+                                        <Icon as={MaterialIcons} name="book" mr="$1" size="md" />
+                                   </ActionsheetIcon>
+                                   <ActionsheetItemText>{label}</ActionsheetItemText>
+                              </ActionsheetItem>
                          ) : null}
                          {checkout.source === 'palace_project' ? (
-                              <Actionsheet.Item onPress={() => handleOpenPalaceProjectInstructions()} startIcon={<Icon as={MaterialIcons} name="info" color="trueGray.400" mr="1" size="6" />}>
-                                   {getTermFromDictionary(language, 'access_instructions')}
-                              </Actionsheet.Item>
+                              <ActionsheetItem onPress={() => handleOpenPalaceProjectInstructions()} startIcon={<Icon as={MaterialIcons} name="info" color="trueGray.400" mr="1" size="6" />}>
+                                   <ActionsheetItemText>{getTermFromDictionary(language, 'access_instructions')}</ActionsheetItemText>
+                              </ActionsheetItem>
                          ) : null}
                          {checkout.accessOnlineUrl != null ? (
                               <>
-                                   <Actionsheet.Item
+                                   <ActionsheetItem
                                         isLoading={access}
                                         isLoadingText={getTermFromDictionary(language, 'accessing', true)}
                                         onPress={() => {
@@ -273,10 +279,13 @@ export const MyCheckout = (props) => {
                                                   toggle();
                                              });
                                         }}
-                                        startIcon={<Icon as={MaterialIcons} name="book" color="trueGray.400" mr="1" size="6" />}>
-                                        {label}
-                                   </Actionsheet.Item>
-                                   <Actionsheet.Item
+                                        >
+                                        <ActionsheetIcon>
+                                             <Icon as={MaterialIcons} name="book" mr="$1" size="md" />
+                                        </ActionsheetIcon>
+                                        <ActionsheetItemText>{label}</ActionsheetItemText>
+                                   </ActionsheetItem>
+                                   <ActionsheetItem
                                         isLoading={returning}
                                         isLoadingText={getTermFromDictionary(language, 'returning', true)}
                                         onPress={() => {
@@ -287,14 +296,17 @@ export const MyCheckout = (props) => {
                                                   toggle();
                                              });
                                         }}
-                                        startIcon={<Icon as={MaterialIcons} name="logout" color="trueGray.400" mr="1" size="6" />}>
-                                        {getTermFromDictionary(language, 'checkout_return_now')}
-                                   </Actionsheet.Item>
+                                        >
+                                        <ActionsheetIcon>
+                                             <Icon as={MaterialIcons} name="logout" mr="$1" size="md" />
+                                        </ActionsheetIcon>
+                                        <ActionsheetItemText>{getTermFromDictionary(language, 'checkout_return_now')}</ActionsheetItemText>
+                                   </ActionsheetItem>
                               </>
                          ) : null}
                          {returnEarly && allowLinkedAccountAction ? (
                               <>
-                                   <Actionsheet.Item
+                                   <ActionsheetItem
                                         isLoading={returning}
                                         isLoadingText={getTermFromDictionary(language, 'returning', true)}
                                         onPress={() => {
@@ -305,12 +317,15 @@ export const MyCheckout = (props) => {
                                                   toggle();
                                              });
                                         }}
-                                        startIcon={<Icon as={MaterialIcons} name="logout" color="trueGray.400" mr="1" size="6" />}>
-                                        {getTermFromDictionary(language, 'checkout_return_now')}
-                                   </Actionsheet.Item>
+                                        >
+                                        <ActionsheetIcon>
+                                             <Icon as={MaterialIcons} name="logout" mr="$1" size="md" />
+                                        </ActionsheetIcon>
+                                        <ActionsheetItemText>{getTermFromDictionary(language, 'checkout_return_now')}</ActionsheetItemText>
+                                   </ActionsheetItem>
                               </>
                          ) : null}
-                    </Actionsheet.Content>
+                    </ActionsheetContent>
                </Actionsheet>
           </Pressable>
      );

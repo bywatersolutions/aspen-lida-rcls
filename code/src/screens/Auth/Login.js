@@ -4,13 +4,13 @@ import Constants from 'expo-constants';
 import * as Location from 'expo-location';
 import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
-import { Box, Button, Center, Icon, Image, KeyboardAvoidingView, Text } from 'native-base';
+import { Box, Button, ButtonGroup, ButtonText, ButtonIcon, Center, Image, Text, KeyboardAvoidingView } from '@gluestack-ui/themed';
 import React from 'react';
 import { Platform } from 'react-native';
-import { LibrarySystemContext } from '../../context/initialContext';
+import { LibrarySystemContext, ThemeContext } from '../../context/initialContext';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
-import { getBasicRegistrationForm, getLibraryInfo } from '../../util/api/library';
+import { getLibraryInfo } from '../../util/api/library';
 
 // custom components and helper files
 import { GLOBALS } from '../../util/globals';
@@ -23,6 +23,7 @@ import { ResetPassword } from './ResetPassword';
 import { SelectYourLibrary } from './SelectYourLibrary';
 import { SelfRegistration } from './SelfRegistration';
 import { SplashScreen } from './Splash';
+import { createGlueTheme } from '../../themes/theme';
 
 export const LoginScreen = () => {
      const [isLoading, setIsLoading] = React.useState(true);
@@ -48,6 +49,7 @@ export const LoginScreen = () => {
      const [enableSelfRegistration, setEnableSelfRegistration] = React.useState(false);
      const [selfRegistrationFields, setSelfRegistrationFields] = React.useState([]);
      const { updateLibrary } = React.useContext(LibrarySystemContext);
+     const { theme, colorMode, textColor, updateTheme } = React.useContext(ThemeContext);
      let isCommunity = true;
      if (!_.includes(GLOBALS.slug, 'aspen-lida') || GLOBALS.slug === 'aspen-lida-bws') {
           isCommunity = false;
@@ -79,6 +81,10 @@ export const LoginScreen = () => {
                                    updateSelectedLibrary(result.libraries[0]);
                               }
                          }
+                    });
+
+                    await createGlueTheme(Constants.expoConfig.extra.apiUrl).then((result) => {
+                         updateTheme(result);
                     });
 
                     if (_.includes(GLOBALS.slug, 'aspen-lida') && GLOBALS.slug !== 'aspen-lida-bws') {
@@ -171,27 +177,28 @@ export const LoginScreen = () => {
      }
 
      return (
-          <Box flex={1} alignItems="center" justifyContent="center" safeArea={5}>
+          <Box flex={1} alignItems="center" justifyContent="center" p="$5">
                <Image source={{ uri: logoImage }} rounded={25} size="xl" alt="" fallbackSource={require('../../themes/default/aspenLogo.png')} />
                {isCommunity || shouldShowSelectLibrary ? <SelectYourLibrary updateSelectedLibrary={updateSelectedLibrary} selectedLibrary={selectedLibrary} query={query} setQuery={setQuery} showModal={showModal} setShowModal={setShowModal} isCommunity={isCommunity} setShouldRequestPermissions={setShouldRequestPermissions} shouldRequestPermissions={shouldRequestPermissions} permissionRequested={permissionRequested} libraries={libraries} allLibraries={allLibraries} /> : null}
                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} width="100%">
                     {selectedLibrary ? <GetLoginForm selectedLibrary={selectedLibrary} usernameLabel={usernameLabel} passwordLabel={passwordLabel} allowBarcodeScanner={allowBarcodeScanner} allowCode39={allowCode39} /> : null}
-                    <Button.Group space={3} justifyContent="center" pt={5} flexWrap="wrap">
+                    <ButtonGroup space="$1" justifyContent="center" pt="$5" flexWrap="wrap">
                          {enableForgotPasswordLink === '1' || enableForgotPasswordLink === 1 ? <ResetPassword ils={ils} enableForgotPasswordLink={enableForgotPasswordLink} usernameLabel={usernameLabel} passwordLabel={passwordLabel} forgotPasswordType={forgotPasswordType} showForgotPasswordModal={showForgotPasswordModal} setShowForgotPasswordModal={setShowForgotPasswordModal} /> : null}
                          {enableForgotBarcode === '1' || enableForgotBarcode === 1 ? <ForgotBarcode usernameLabel={usernameLabel} showForgotBarcodeModal={showForgotBarcodeModal} setShowForgotBarcodeModal={setShowForgotBarcodeModal} /> : null}
-                    </Button.Group>
+                    </ButtonGroup>
                     {enableSelfRegistration ? (
-                         <Button mt={3} variant="ghost" colorScheme="primary" onPress={openSelfRegistration}>
-                              {getTermFromDictionary('en', 'register_for_a_library_card')}
+                         <Button mt="$3" variant="link" onPress={openSelfRegistration} color={theme['colors']['primary']['500']}>
+                              <ButtonText color={theme['colors']['primary']['500']}>{getTermFromDictionary('en', 'register_for_a_library_card')}</ButtonText>
                          </Button>
                     ) : null}
                     {isCommunity && Platform.OS !== 'android' ? (
-                         <Button mt={5} size="xs" variant="ghost" colorScheme="tertiary" startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}>
-                              {getTermFromDictionary('en', 'reset_geolocation')}
+                         <Button mt="$5" size="xs" variant="link">
+                              <ButtonIcon mr="$1" as={Ionicons} name="navigate-circle-outline" color={theme['colors']['tertiary']['500']} />
+                              <ButtonText color={theme['colors']['tertiary']['500']}>{getTermFromDictionary('en', 'reset_geolocation')}</ButtonText>
                          </Button>
                     ) : null}
                     <Center>
-                         <Text mt={5} fontSize="xs" _light={{ color: 'darkText' }} _dark={{ color: 'lightText' }}>
+                         <Text mt="$5" fontSize="xs" color={textColor}>
                               {GLOBALS.appVersion} {GLOBALS.appStage} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}] c[{GLOBALS.releaseChannel ?? 'Development'}]
                          </Text>
                     </Center>

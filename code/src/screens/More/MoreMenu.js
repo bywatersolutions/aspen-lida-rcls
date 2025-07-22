@@ -4,14 +4,36 @@ import * as WebBrowser from 'expo-web-browser';
 import { useNavigation } from '@react-navigation/native';
 import _ from 'lodash';
 import moment from 'moment';
-import { Box, Divider, FlatList, HStack, Icon, Pressable, ScrollView, Heading, Button, Text, useColorModeValue, useToken, VStack, Modal } from 'native-base';
+import {
+     Box,
+     Divider,
+     FlatList,
+     HStack,
+     Icon,
+     Pressable,
+     ScrollView,
+     Heading,
+     Button,
+     Text,
+     VStack,
+     Modal,
+     ModalBackdrop,
+     ModalContent,
+     ModalHeader,
+     ModalFooter,
+     ModalCloseButton, CloseIcon, ModalBody, ButtonText, ButtonGroup
+} from '@gluestack-ui/themed';
 import React from 'react';
-import { popAlert, popToast } from '../../components/loadError';
+import { popToast } from '../../components/loadError';
 import { AuthContext } from '../../components/navigation';
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext } from '../../context/initialContext';
+import {
+     LanguageContext,
+     LibraryBranchContext,
+     LibrarySystemContext,
+     ThemeContext,
+} from '../../context/initialContext';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
-import { createList } from '../../util/api/list';
 import { deleteAspenUser } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
 import { LIBRARY } from '../../util/loadLibrary';
@@ -21,6 +43,8 @@ export const MoreMenu = () => {
      const { locations } = React.useContext(LibraryBranchContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { menu } = React.useContext(LibrarySystemContext);
+     const { textColor, theme, colorMode } = React.useContext(ThemeContext);
+
      const { signOut } = React.useContext(AuthContext);
      const hasMenuItems = _.size(menu);
      const navigation = useNavigation();
@@ -54,22 +78,22 @@ export const MoreMenu = () => {
      return (
           <ScrollView>
                <Box>
-                    <VStack space="4" my="2" mx="1">
+                    <VStack space="md" my="$2" mx="$1">
                          <MyLibrary />
                          <Divider />
 
-                         <VStack divider={<Divider />} space="4">
+                         <VStack divider={<Divider />} space="md">
                               {hasMenuItems > 0 ? <FlatList data={Object.keys(menu)} renderItem={({ item }) => <MenuLink links={menu[item]} />} /> : null}
-                              <VStack space="3">
+                              <VStack space="md">
                                    <VStack>
                                         <ViewAllLocations />
                                         <Settings />
                                         <PrivacyPolicy />
                                         {library.catalogRegistrationCapabilities?.enableSelfRegistration === '1' && library.catalogRegistrationCapabilities.enableSelfRegistrationInApp === '1' ? (
-                                        <Pressable px="2" py="3" onPress={toggleDeleteConfirmationModal}>
-                                             <HStack space="1" alignItems="center">
-                                                  <Icon as={MaterialIcons} name="chevron-right" size="7" onPress={() => setShowDeleteConfirmationModal(true)}/>
-                                                  <Text fontWeight="500">{getTermFromDictionary(language, 'delete_account')}</Text>
+                                        <Pressable px="$2" py="$3" onPress={toggleDeleteConfirmationModal}>
+                                             <HStack space="sm" alignItems="center">
+                                                  <Icon as={MaterialIcons} name="chevron-right" size="lg" color={textColor} onPress={() => setShowDeleteConfirmationModal(true)}/>
+                                                  <Text fontWeight="500" color={textColor}>{getTermFromDictionary(language, 'delete_account')}</Text>
                                              </HStack>
                                         </Pressable>
                                         ) : null}
@@ -78,22 +102,26 @@ export const MoreMenu = () => {
                          </VStack>
                     </VStack>
                     <Modal isOpen={showDeleteConfirmationModal} onClose={toggleDeleteConfirmationModal}>
-                         <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }}>
-                              <Modal.CloseButton />
-                              <Modal.Header>
-                                   <Heading size="md">{getTermFromDictionary(language, 'delete_account')}</Heading>
-                              </Modal.Header>
-                              <Modal.Body>
-                                   <Text>
+                         <ModalBackdrop />
+                         <ModalContent bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}>
+                              <ModalHeader>
+                                   <Heading size="md" color={textColor}>{getTermFromDictionary(language, 'delete_account')}</Heading>
+                                   <ModalCloseButton hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}>
+                                        <Icon as={CloseIcon} color={textColor} />
+                                   </ModalCloseButton>
+                              </ModalHeader>
+                              <ModalBody>
+                                   <Text color={textColor}>
                                         {getTermFromDictionary(language, 'confirm_delete_account_message')}
                                    </Text>
-                              </Modal.Body>
-                              <Modal.Footer>
-                                   <Button.Group>
-                                        <Button variant="outline" onPress={toggleDeleteConfirmationModal}>
-                                             {getTermFromDictionary(language, 'cancel')}
+                              </ModalBody>
+                              <ModalFooter>
+                                   <ButtonGroup>
+                                        <Button variant="outline" borderColor={theme['colors']['primary']['500']} onPress={toggleDeleteConfirmationModal}>
+                                             <ButtonText color={theme['colors']['primary']['500']}>{getTermFromDictionary(language, 'cancel')}</ButtonText>
                                         </Button>
                                         <Button
+                                             bgColor={theme['colors']['primary']['500']}
                                             isLoading={deleting}
                                             isLoadingText={getTermFromDictionary(language, 'deleting', true)}
                                             onPress={async () => {
@@ -102,38 +130,41 @@ export const MoreMenu = () => {
                                                       setShowDeleteResultsModal(true);
                                                  });
                                             }}>
-                                             {getTermFromDictionary(language, 'confirm_delete_account')}
+                                             <ButtonText color={theme['colors']['primary']['500-text']}>{getTermFromDictionary(language, 'confirm_delete_account')}</ButtonText>
                                         </Button>
-                                   </Button.Group>
-                              </Modal.Footer>
-                         </Modal.Content>
+                                   </ButtonGroup>
+                              </ModalFooter>
+                         </ModalContent>
                     </Modal>
                     <Modal isOpen={showDeleteResultsModal}>
-                         <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }}>
-                              <Modal.CloseButton />
-                              <Modal.Header>
-                                   <Heading size="md">{getTermFromDictionary(language, 'delete_account')}</Heading>
-                              </Modal.Header>
-                              <Modal.Body>
+                         <ModalBackdrop/>
+                         <ModalContent bgColor={colorMode === 'light' ? theme['colors']['warmGray']['50'] : theme['colors']['coolGray']['700']}>
+                              <ModalHeader>
+                                   <Heading size="md" color={textColor}>{getTermFromDictionary(language, 'delete_account')}</Heading>
+                                   <ModalCloseButton hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}>
+                                        <Icon as={CloseIcon} color={textColor} />
+                                   </ModalCloseButton>
+                              </ModalHeader>
+                              <ModalBody>
                                    {deleteResults?.message ? (
-                                       <Text>{deleteResults.message}</Text>
+                                       <Text color={textColor}>{deleteResults.message}</Text>
                                    ) : (
-                                       <Text>{getTermFromDictionary(language, 'error_deleting_account')}</Text>
+                                       <Text color={textColor}>{getTermFromDictionary(language, 'error_deleting_account')}</Text>
                                    )}
-                              </Modal.Body>
-                              <Modal.Footer>
+                              </ModalBody>
+                              <ModalFooter>
                                         {deleteResults.success === true ? (
-                                            <Button variant="primary" onPress={signOut}>
-                                                 {getTermFromDictionary(language, 'button_ok')}
+                                            <Button bgColor={theme['colors']['primary']['500']} onPress={signOut}>
+                                                 <ButtonText color={theme['colors']['primary']['500-text']} >{getTermFromDictionary(language, 'button_ok')}</ButtonText>
                                             </Button>
                                         ) : (
-                                            <Button variant="primary" onPress={toggleDeleteResultsModal}>
-                                                 {getTermFromDictionary(language, 'button_ok')}
+                                            <Button bgColor={theme['colors']['primary']['500']}  variant="primary" onPress={toggleDeleteResultsModal}>
+                                                 <ButtonText color={theme['colors']['primary']['500-text']} >{getTermFromDictionary(language, 'button_ok')}</ButtonText>
                                             </Button>
                                         )}
 
-                              </Modal.Footer>
-                         </Modal.Content>
+                              </ModalFooter>
+                         </ModalContent>
                     </Modal>
                </Box>
           </ScrollView>
@@ -145,7 +176,7 @@ const MyLibrary = () => {
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
 
-     const contrastTextColor = useToken('colors', 'primary.400-text');
+     const { textColor, theme, colorMode } = React.useContext(ThemeContext);
 
      let isClosedToday = false;
      let hoursLabel = '';
@@ -186,20 +217,20 @@ const MyLibrary = () => {
      }
 
      return (
-          <Box m="4" bg="primary.400" p="6" rounded="xl">
-               <Pressable display="flex" flexDirection="row" onPress={() => navigate('MyLibrary')} space="1" alignItems="center" justifyContent="space-between">
+          <Box m="$4" bgColor={theme['colors']['primary']['400']} p="$6" borderRadius="$xl">
+               <Pressable display="flex" flexDirection="row" onPress={() => navigate('MyLibrary')} space="sm" alignItems="center" justifyContent="space-between">
                     <VStack>
-                         <Text bold fontSize="16" color={contrastTextColor}>
+                         <Text bold fontSize="16" color={theme['colors']['primary']['400-text']}>
                               {library.displayName}
                          </Text>
                          {library.displayName !== location.displayName ? (
-                              <Text bold color={contrastTextColor}>
+                              <Text bold color={theme['colors']['primary']['400-text']}>
                                    {location.displayName}
                               </Text>
                          ) : null}
-                         {hoursLabel ? <Text color={contrastTextColor}>{hoursLabel}</Text> : null}
+                         {hoursLabel ? <Text color={theme['colors']['primary']['400-text']}>{hoursLabel}</Text> : null}
                     </VStack>
-                    <Icon as={MaterialIcons} name="chevron-right" size="7" color={contrastTextColor} />
+                    <Icon as={MaterialIcons} name="chevron-right" size="lg" color={theme['colors']['primary']['400-text']} />
                </Pressable>
           </Box>
      );
@@ -208,13 +239,14 @@ const MyLibrary = () => {
 const ViewAllLocations = () => {
      const { language } = React.useContext(LanguageContext);
      const { locations } = React.useContext(LibraryBranchContext);
+     const { textColor, theme, colorMode } = React.useContext(ThemeContext);
 
      if (_.size(locations) > 1) {
           return (
-               <Pressable px="2" py="3" onPress={() => navigate('AllLocations')}>
-                    <HStack space="1" alignItems="center">
-                         <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                         <Text fontWeight="500">{getTermFromDictionary(language, 'view_all_locations')}</Text>
+               <Pressable px="2$" py="$3" onPress={() => navigate('AllLocations')}>
+                    <HStack space="sm" alignItems="center">
+                         <Icon as={MaterialIcons} name="chevron-right" size="lg" color={textColor}/>
+                         <Text fontWeight="500" color={textColor}>{getTermFromDictionary(language, 'view_all_locations')}</Text>
                     </HStack>
                </Pressable>
           );
@@ -225,12 +257,13 @@ const ViewAllLocations = () => {
 
 const Settings = () => {
      const { language } = React.useContext(LanguageContext);
+     const { textColor, theme, colorMode } = React.useContext(ThemeContext);
 
      return (
-          <Pressable px="2" py="3" onPress={() => navigate('MyPreferences')}>
-               <HStack space="1" alignItems="center">
-                    <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                    <Text fontWeight="500">{getTermFromDictionary(language, 'preferences')}</Text>
+          <Pressable px="$2" py="$3" onPress={() => navigate('MyPreferences')}>
+               <HStack space="sm" alignItems="center">
+                    <Icon as={MaterialIcons} name="chevron-right" size="lg" color={textColor} />
+                    <Text fontWeight="500" color={textColor}>{getTermFromDictionary(language, 'preferences')}</Text>
                </HStack>
           </Pressable>
      );
@@ -238,23 +271,24 @@ const Settings = () => {
 
 const DeleteAccount = () => {
      const { language } = React.useContext(LanguageContext);
+     const { textColor, theme, colorMode } = React.useContext(ThemeContext);
 
      return (
-         <Pressable px="2" py="3" onPress={() => navigate('MyPreferences')}>
-              <HStack space="1" alignItems="center">
-                   <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                   <Text fontWeight="500">{getTermFromDictionary(language, 'preferences')}</Text>
+         <Pressable px="$2" py="$3" onPress={() => navigate('MyPreferences')}>
+              <HStack space="sm" alignItems="center">
+                   <Icon as={MaterialIcons} name="chevron-right" size="lg" color={textColor}/>
+                   <Text fontWeight="500" color={textColor}>{getTermFromDictionary(language, 'preferences')}</Text>
               </HStack>
          </Pressable>
      );
 };
 
 const PrivacyPolicy = () => {
-     const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
 
-     const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
-     const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
+     const { textColor, theme, colorMode } = React.useContext(ThemeContext);
+     const backgroundColor = colorMode === 'light' ? theme['colors']['warmGray']['200'] : theme['colors']['coolGray']['900'];
+
      const browserParams = {
           enableDefaultShareMenuItem: false,
           presentationStyle: 'automatic',
@@ -302,10 +336,10 @@ const PrivacyPolicy = () => {
      };
 
      return (
-          <Pressable px="2" py="3" onPress={() => openURL()}>
-               <HStack space="1" alignItems="center">
-                    <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                    <Text fontWeight="500">{getTermFromDictionary(language, 'privacy_policy')}</Text>
+          <Pressable px="$2" py="$3" onPress={() => openURL()}>
+               <HStack space="sm" alignItems="center">
+                    <Icon as={MaterialIcons} name="chevron-right" size="lg" color={textColor} />
+                    <Text fontWeight="500" color={textColor}>{getTermFromDictionary(language, 'privacy_policy')}</Text>
                </HStack>
           </Pressable>
      );
@@ -321,8 +355,9 @@ const MenuLink = (payload) => {
      let categoryLabel = _.sample(categories);
      categoryLabel = categoryLabel.category;
 
-     const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
-     const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
+     const { textColor, theme, colorMode } = React.useContext(ThemeContext);
+     const backgroundColor = colorMode === 'light' ? theme['colors']['warmGray']['200'] : theme['colors']['coolGray']['900'];
+
      const browserParams = {
           enableDefaultShareMenuItem: false,
           presentationStyle: 'automatic',
@@ -411,10 +446,10 @@ const MenuLink = (payload) => {
                          }}
                          content={
                               <>
-                                   <HStack space="1" alignItems="center" px="2" py="3">
-                                        <Icon as={expanded ? Entypo : MaterialIcons} name={expanded ? 'chevron-small-down' : 'chevron-right'} size="7" />
+                                   <HStack space="sm" alignItems="center" px="$2" py="$3">
+                                        <Icon as={expanded ? Entypo : MaterialIcons} name={expanded ? 'chevron-small-down' : 'chevron-right'} size="lg" color={textColor} />
                                         <VStack w="100%">
-                                             <Text fontWeight="500">{categoryLabel}</Text>
+                                             <Text fontWeight="500" color={textColor}>{categoryLabel}</Text>
                                         </VStack>
                                    </HStack>
                               </>
@@ -434,10 +469,10 @@ const MenuLink = (payload) => {
                                         }}
                                         borderBottom
                                         onPress={() => openURL(item.url)}>
-                                        <HStack space="1" alignItems="center" ml={4}>
-                                             <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                                        <HStack space="sm" alignItems="center" ml="$4">
+                                             <Icon as={MaterialIcons} name="chevron-right" size="lg" color={textColor} />
                                              <VStack w="100%">
-                                                  <Text fontWeight="500">{item.linkText}</Text>
+                                                  <Text fontWeight="500" color={textColor}>{item.linkText}</Text>
                                              </VStack>
                                         </HStack>
                                    </ListItem>
@@ -452,11 +487,11 @@ const MenuLink = (payload) => {
           <>
                {_.map(categories, function (item, index) {
                     return (
-                         <Pressable key={index} px="2" py="3" rounded="md" onPress={() => openURL(item.url)}>
-                              <HStack space="1" alignItems="center">
-                                   <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                         <Pressable key={index} px="$2" py="$3" borderRadius="$md" onPress={() => openURL(item.url)}>
+                              <HStack space="sm" alignItems="center">
+                                   <Icon as={MaterialIcons} name="chevron-right" size="lg" color={textColor} />
                                    <VStack w="100%">
-                                        <Text fontWeight="500">{item.linkText}</Text>
+                                        <Text fontWeight="500" color={textColor}>{item.linkText}</Text>
                                    </VStack>
                               </HStack>
                          </Pressable>

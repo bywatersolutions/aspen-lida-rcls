@@ -1,4 +1,4 @@
-import { AlertDialog, Button, Center } from 'native-base';
+import { AlertDialog, Button, Center } from '@gluestack-ui/themed-native-base';
 import React from 'react';
 
 import {AuthContext} from '../../components/navigation';
