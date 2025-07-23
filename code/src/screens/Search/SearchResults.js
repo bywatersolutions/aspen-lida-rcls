@@ -78,6 +78,7 @@ export const SearchResults = () => {
      if (term && term !== storedTerm) {
           console.log('Search term changed. Clearing previous search options...');
           setStoredTerm(term);
+          setPage(1);
           SEARCH.pendingFilters = [];
           SEARCH.sortMethod = 'relevance';
           SEARCH.appliedFilters = [];
