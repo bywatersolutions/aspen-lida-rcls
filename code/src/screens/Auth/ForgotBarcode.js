@@ -130,9 +130,9 @@ export const ForgotBarcode = (props) => {
                          </ModalHeader>
                          <ModalBody>
                               {showResults && !results.success ? (
-                                   <Text color={textColor}>{stripHTML(results.message || 'An unknown error occurred. Please contact the library for assistance.')}</Text>
+                                   <Text color={textColor}>{stripHTML(results.message || getTermFromDictionary('en', 'forgot_barcode_error_message'))}</Text>
                               ) : showResults ? (
-                                   <Text color={textColor}>{stripHTML(results.message || 'Your request completed successfully. Please contact the library if you do not receive a message soon.')}</Text>
+                                   <Text color={textColor}>{stripHTML(results.message || getTermFromDictionary('en', 'forgot_barcode_success_message'))}</Text>
                               ) : (
                                    <>
                                         <Text color={textColor}>{modalBody}</Text>
