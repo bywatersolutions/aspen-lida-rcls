@@ -3,9 +3,12 @@ import { useRoute, useNavigation, CommonActions, StackActions } from '@react-nav
 import { Box, FlatList, HStack, Switch, Text, Pressable, ChevronLeftIcon } from 'native-base';
 import React from 'react';
 import { loadingSpinner } from '../../../components/loadingSpinner';
+import { DisplayErrorAlertDialog } from '../../../components/loadError';
 import { BrowseCategoryContext, LanguageContext, LibrarySystemContext, ThemeContext } from '../../../context/initialContext';
 
 import { getBrowseCategoryListForUser, updateBrowseCategoryStatus } from '../../../util/loadPatron';
+import { getErrorMessage } from '../../../util/apiAuth';
+import { logDebugMessage, logErrorMessage } from '../../../util/logging';
 
 export const Settings_BrowseCategories = () => {
      const navigation = useNavigation();
@@ -60,6 +63,9 @@ const DisplayCategory = (data) => {
      const category = data.data;
      const setLoading = data.setLoading;
      const [toggled, setToggle] = React.useState(!category.isHidden);
+     const [showErrorDialog, setShowErrorDialog] = React.useState(false);
+     const [errorTitle, setErrorTitle] = React.useState('');
+     const [errorMessage, setErrorMessage] = React.useState('');
      const toggleSwitch = () => setToggle((previousState) => !previousState);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
@@ -69,11 +75,19 @@ const DisplayCategory = (data) => {
           setLoading(true);
           const key = category['key'] ?? category['sourceId'];
           await updateBrowseCategoryStatus(key, library.baseUrl).then(async (response) => {
-               queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language, maxNum] });
-               await queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
+               if (!response.ok) {
+                    const error = getErrorMessage({ statusCode: response.status, problem: response.problem });
+                    setErrorTitle(error.title);
+                    setErrorMessage(error.message);
+                    logErrorMessage(response);
+                    setShowErrorDialog(true);
+               } else {
+                    await queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language, maxNum] });
+                    await queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
+               }
           });
-
-          console.log(key + ', ' + category['isHidden']);
+          setLoading(false);
+          logDebugMessage(key + ', ' + category['isHidden']);
      };
      return (
           <Box borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
@@ -98,6 +112,9 @@ const DisplayCategory = (data) => {
                          isChecked={toggled}
                     />
                </HStack>
+               {showErrorDialog && (
+                    <DisplayErrorAlertDialog title={errorTitle} message={errorMessage} />
+               )}
           </Box>
      );
 };
