@@ -11,20 +11,21 @@ import { getTermFromDictionary } from '../../../../translations/TranslationServi
 import { ChevronRight, ChevronUp, ChevronDown } from 'lucide-react-native';
 import Constants from 'expo-constants';
 import { useNotificationPermissions, useNotificationPreferences } from '../../../../hooks/useNotifications';
+import { logDebugMessage, logErrorMessage } from '../../../../util/logging';
 
 export const NotificationPermissionStatus = () => {
     const { language } = React.useContext(LanguageContext);
     const { textColor } = React.useContext(ThemeContext);
     const { library } = React.useContext(LibrarySystemContext);
-    const { user, updateExpoToken, updateAspenToken, expoToken, aspenToken } = React.useContext(UserContext);
+    const { user, updateExpoToken, updateAspenToken, expoToken, aspenToken, userDebugMessage, updateUserDebugMessage } = React.useContext(UserContext);
     const navigation = useNavigation();
 
-    const { permissionStatus, checkAndUpdatePermissions } = useNotificationPermissions(library, user, updateExpoToken, updateAspenToken);
+    const { permissionStatus, checkAndUpdatePermissions } = useNotificationPermissions(library, user, updateExpoToken, updateAspenToken, updateUserDebugMessage);
 
     // Check permissions on mount
     React.useEffect(() => {
         const checkStatus = async () => {
-            await checkAndUpdatePermissions();
+            await checkAndUpdatePermissions('Notifications Mount');
         };
         checkStatus();
     }, []);
@@ -32,7 +33,7 @@ export const NotificationPermissionStatus = () => {
     // Check permissions when screen comes into focus
     React.useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
-            checkAndUpdatePermissions();
+            checkAndUpdatePermissions('Notifications focus listener');
         });
 
         return unsubscribe;
@@ -40,7 +41,7 @@ export const NotificationPermissionStatus = () => {
 
     // Check permissions when tokens change
     React.useEffect(() => {
-        checkAndUpdatePermissions();
+        checkAndUpdatePermissions('Token change effect');
     }, [expoToken, aspenToken]);
 
     return (
@@ -68,14 +69,14 @@ export const NotificationPermissionDescription = () => {
     const { theme, textColor } = React.useContext(ThemeContext);
     const { language } = React.useContext(LanguageContext);
     const { library } = React.useContext(LibrarySystemContext);
-    const { user, updateExpoToken, updateAspenToken, notificationSettings, expoToken } = React.useContext(UserContext);
+    const { user, updateExpoToken, aspenToken, updateAspenToken, notificationSettings, expoToken, userDebugMessage, updateUserDebugMessage } = React.useContext(UserContext);
 
     const {
         permissionStatus,
         isLoading,
         addNotificationPermissions,
         revokeNotificationPermissions
-    } = useNotificationPermissions(library, user, updateExpoToken, updateAspenToken);
+    } = useNotificationPermissions(library, user, updateExpoToken, updateAspenToken, updateUserDebugMessage);
 
     const {
         preferences,
@@ -156,7 +157,7 @@ export const NotificationPermissionDescription = () => {
     // Add effect to check permissions when screen is focused
     React.useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
-            checkAndUpdatePermissions();
+            checkAndUpdatePermissions('Notifications focus effect');
         });
 
         return unsubscribe;
@@ -166,6 +167,7 @@ export const NotificationPermissionDescription = () => {
         const { status } = await Notifications.getPermissionsAsync();
         if (status !== permissionStatus) {
             // Permission status has changed, update the state
+            logDebugMessage('Permission status has changed, updating state, status is "' + status + '"');
             updatePermissionStatus(status === 'granted');
         }
     };
@@ -178,7 +180,7 @@ export const NotificationPermissionDescription = () => {
         } else {
             // If permissions are revoked, you might want to clear preferences or handle it accordingly
             // For now, we'll just log out the user as an example
-            console.log('Permissions revoked, handling accordingly...');
+            logDebugMessage('Permissions revoked, status is ' + status + ' (handling accordingly...)');
         }
     };
 
@@ -197,7 +199,8 @@ export const NotificationPermissionDescription = () => {
                     <Text color={textColor}>
                         {Constants.expoConfig.name} {permissionStatus ?
                             getTermFromDictionary(language, 'allowed_notification') :
-                            getTermFromDictionary(language, 'not_allowed_notification')}
+                            getTermFromDictionary(language, 'not_allowed_notification')
+                        }
                     </Text>
 
                     <Text color={textColor} mt="$5">

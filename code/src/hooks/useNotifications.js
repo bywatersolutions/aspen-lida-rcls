@@ -5,7 +5,7 @@ import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import _ from 'lodash';
 import { createChannelsAndCategories, deletePushToken, getNotificationPreference, registerForPushNotificationsAsync, savePushToken, setNotificationPreference } from '../components/Notifications';
-import { logSentryMessage, logWarnMessage } from '../util/logging';
+import { logSentryMessage, logErrorMessage, logWarnMessage, logDebugMessage } from '../util/logging';
 
 // Configure default notification behavior
 Notifications.setNotificationHandler({
@@ -16,7 +16,7 @@ Notifications.setNotificationHandler({
     }),
 });
 
-export const useNotificationPermissions = (library, user, updateExpoToken, updateAspenToken) => {
+export const useNotificationPermissions = (library, user, updateExpoToken, updateAspenToken, updateUserDebugMessage) => {
     const [permissionStatus, setPermissionStatus] = React.useState(false);
     const [isLoading, setLoading] = React.useState(false);
     const appState = React.useRef(AppState.currentState);
@@ -24,10 +24,12 @@ export const useNotificationPermissions = (library, user, updateExpoToken, updat
     const responseListener = React.useRef();
     const lastCheckedStatus = React.useRef(false);
 
-    const checkAndUpdatePermissions = async (force = false) => {
+    const checkAndUpdatePermissions = async (source, force = false) => {
+        updateUserDebugMessage("Checking and updating permissions from " + source + " force is " + (force ? 'true' : 'false'));
         try {
             const { status } = await Notifications.getPermissionsAsync();
             const isGranted = status === 'granted';
+            updateUserDebugMessage("Got permission async, status is " + status);
 
             // Only update if status has changed or force update is requested
             if (force || lastCheckedStatus.current !== isGranted) {
@@ -36,8 +38,11 @@ export const useNotificationPermissions = (library, user, updateExpoToken, updat
 
                 // Clear tokens if permissions are revoked
                 if (!isGranted) {
+                    updateUserDebugMessage("Clearing tokens because permissions are not granted in checkAndUpdatePermissions");
                     updateExpoToken(null);
                     updateAspenToken(false);
+                }else{
+                    await handlePermissionGranted();
                 }
             }
             return isGranted;
@@ -47,25 +52,12 @@ export const useNotificationPermissions = (library, user, updateExpoToken, updat
         }
     };
 
-    // Function to handle simulator test notifications
-    const scheduleTestNotification = async () => {
-        if (!Device.isDevice) {
-            await Notifications.scheduleNotificationAsync({
-                content: {
-                    title: "Test Notification",
-                    body: "This is a test notification in the simulator",
-                    data: { type: 'test' },
-                },
-                trigger: { seconds: 2 },
-            });
-        }
-    };
-
     React.useEffect(() => {
         const checkPermissions = async () => {
-            const isGranted = await checkAndUpdatePermissions(true);
+            const isGranted = await checkAndUpdatePermissions('checkPermissions Effect', true);
             if (!isGranted) {
                 // If permissions are not granted, ensure tokens are cleared
+                updateUserDebugMessage("Clearing tokens because permissions are not granted in checkPermissions");
                 updateExpoToken(null);
                 updateAspenToken(false);
             }
@@ -74,58 +66,72 @@ export const useNotificationPermissions = (library, user, updateExpoToken, updat
         checkPermissions();
 
         // Set up notification listeners
-        notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-            console.log('Received notification:', notification);
-        });
-
-        responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-            console.log('Notification response:', response);
-        });
+//        notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+//            logDebugMessage('Received notification:', notification);
+//        });
+//
+//        responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+//            logDebugMessage('Notification response:', response);
+//        });
 
         const subscription = AppState.addEventListener('change', async (nextAppState) => {
             if (nextAppState === 'active') {
-                await checkAndUpdatePermissions(true);
+                await checkAndUpdatePermissions('change subscription', true);
             }
             appState.current = nextAppState;
         });
 
         return () => {
             subscription.remove();
-            if (notificationListener.current) {
-                Notifications.removeNotificationSubscription(notificationListener.current);
-            }
-            if (responseListener.current) {
-                Notifications.removeNotificationSubscription(responseListener.current);
-            }
+//            if (notificationListener.current) {
+//                notificationListener.current.remove();
+//            }
+//            if (responseListener.current) {
+//                responseListener.current.remove();
+//            }
         };
     }, []);
 
     const handlePermissionGranted = async () => {
-        const token = (await Notifications.getExpoPushTokenAsync({
-            projectId: Constants.expoConfig.extra.eas.projectId,
-        })).data;
+        updateUserDebugMessage("Handling Permission Granted Project ID is " + Constants.expoConfig.extra.eas.projectId);
+        try {
+           const token = (await Notifications.getExpoPushTokenAsync({
+               projectId: Constants.expoConfig.extra.eas.projectId,
+           })).data;
 
-        if (token && !_.isEmpty(user.notification_preferences)) {
-            const tokenStorage = user.notification_preferences;
-            if (_.find(tokenStorage, _.matchesProperty('token', token))) {
-                updateAspenToken(true);
-                updateExpoToken(token);
-            }
+           updateUserDebugMessage("Fetched expo push token " + token.slice(-5));
+           if (token) {
+               updateAspenToken(true);
+               updateUserDebugMessage("Saving Expo Token " + token.slice(-5));
+               updateExpoToken(token);
+           }else{
+               updateUserDebugMessage("Not updating token because token is empty");
+           }
+        } catch (error) {
+           updateUserDebugMessage("Error getting expo push token");
+           updateUserDebugMessage(error);
         }
+
     };
 
     const addNotificationPermissions = async () => {
+        updateUserDebugMessage("Adding Notification Permissions");
         try {
             setLoading(true);
             await createChannelsAndCategories();
-            const result = await registerForPushNotificationsAsync(library.baseUrl);
+            updateUserDebugMessage("Calling Register for push notifications async");
+            const result = await registerForPushNotificationsAsync(library.baseUrl, updateUserDebugMessage);
 
             if (result) {
-                await savePushToken(library.baseUrl, result);
+                updateUserDebugMessage("registerForPushNotificationsAsync succeeded, saving push token");
+                await savePushToken(library.baseUrl, result, updateUserDebugMessage);
+                updateUserDebugMessage("finished saving push token");
                 updateExpoToken(result);
                 updateAspenToken(true);
-                await checkAndUpdatePermissions(); // Update permission status after successful registration
+                await checkAndUpdatePermissions('Add Notification Permissions'); // Update permission status after successful registration
                 return true;
+            }else{
+                updateUserDebugMessage("registerForPushNotificationsAsync failed");
             }
             return false;
         } catch (error) {
@@ -137,6 +143,7 @@ export const useNotificationPermissions = (library, user, updateExpoToken, updat
     };
 
     const revokeNotificationPermissions = async () => {
+        updateUserDebugMessage("Revoking Notification Permissions");
         try {
             setLoading(true);
 
@@ -189,14 +196,14 @@ export const useNotificationPermissions = (library, user, updateExpoToken, updat
                 if (nextAppState === 'active') {
                     // Small delay to ensure Android has time to update permission state
                     setTimeout(async () => {
-                        await checkAndUpdatePermissions(true);
+                        await checkAndUpdatePermissions('App Activation', true);
                         subscription.remove();
                     }, 1000);
                 }
             });
         } catch (error) {
-             logSentryMessage('Error revoking notification permissions:', error);
-            await checkAndUpdatePermissions(true);
+            logSentryMessage('Error revoking notification permissions:', error);
+            await checkAndUpdatePermissions('revoke notifications error', true);
         } finally {
             setLoading(false);
         }
@@ -204,11 +211,11 @@ export const useNotificationPermissions = (library, user, updateExpoToken, updat
 
     // Add an effect to check permissions status on mount and when app comes to foreground
     React.useEffect(() => {
-        checkAndUpdatePermissions();
+        checkAndUpdatePermissions('Permissions status effect');
 
         const subscription = AppState.addEventListener('change', async (nextAppState) => {
             if (nextAppState === 'active') {
-                await checkAndUpdatePermissions();
+                await checkAndUpdatePermissions('App activation event');
             }
         });
 

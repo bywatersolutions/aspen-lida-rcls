@@ -18,7 +18,7 @@ export const PreferencesScreen = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
-     const { user, expoToken, aspenToken, updateExpoToken, updateAspenToken } = React.useContext(UserContext);
+     const { user, expoToken, updateExpoToken, updateAspenToken } = React.useContext(UserContext);
 
      React.useEffect(() => {
           const updateTokens = navigation.addListener('focus', async () => {
