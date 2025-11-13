@@ -44,7 +44,7 @@ export const SelfCheckOut = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
-     const { user, cards, accounts, updateUser } = React.useContext(UserContext);
+     const { user, cards, accounts } = React.useContext(UserContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const passedItems = useRoute().params?.items ?? [];
      const [items, setItems] = React.useState(passedItems);

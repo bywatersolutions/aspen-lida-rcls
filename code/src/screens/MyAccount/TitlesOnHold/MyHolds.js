@@ -37,7 +37,7 @@ export const MyHolds = () => {
      const isFetchingHolds = useIsFetching({ queryKey: ['holds'] });
      const queryClient = useQueryClient();
      const navigation = useNavigation();
-     const { user, updateUser, userHoldPendingSortMethod, updateUserHoldPendingSortMethod, userHoldReadySortMethod, updateUserHoldReadySortMethod, locations, updatePickupLocations} = React.useContext(UserContext);
+     const { user, userHoldPendingSortMethod, updateUserHoldPendingSortMethod, userHoldReadySortMethod, updateUserHoldReadySortMethod, locations, updatePickupLocations} = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { holds, updateHolds } = React.useContext(HoldsContext);
      const { language } = React.useContext(LanguageContext);

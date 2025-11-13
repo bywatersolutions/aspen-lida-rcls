@@ -73,7 +73,7 @@ export const MyReadingHistory = () => {
      const [filter, setFilter] = React.useState('');
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
-     const { user, updateUser, readingHistory, updateReadingHistory } = React.useContext(UserContext);
+     const { user, readingHistory, updateReadingHistory } = React.useContext(UserContext);
      const insets = useSafeAreaInsets();
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
      const pageSize = 20;
@@ -531,7 +531,7 @@ export const MyReadingHistory = () => {
 
 const Item = (data) => {
      const queryClient = useQueryClient();
-     const { user, updateUser } = React.useContext(UserContext);
+     const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { theme, textColor, colorMode } = React.useContext(ThemeContext);

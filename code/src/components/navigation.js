@@ -94,6 +94,8 @@ try {
 
 
 export function App() {
+     const {updateUser} = React.useContext(UserContext);
+
      const primaryColor = useToken('colors', 'primary.base');
      const primaryColorContrast = useToken('colors', useContrastText(primaryColor));
      const screenBackgroundColor = useToken('colors', useColorModeValue('warmGray.50', 'coolGray.800'));
@@ -260,7 +262,6 @@ export function App() {
      }
 
      const { language } = React.useContext(LanguageContext);
-     const {updateUser} = React.useContext(UserContext);
 
      return (
           <AuthContext.Provider value={authContext}>

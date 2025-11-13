@@ -45,7 +45,7 @@ export const PlaceHold = (props) => {
           userHasAlternateLibraryCard,
           shouldPromptAlternateLibraryCard
      } = props;
-     const { user, updateUser, accounts, locations} = React.useContext(UserContext);
+     const { user, accounts, locations} = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
      const [loading, setLoading] = React.useState(false);

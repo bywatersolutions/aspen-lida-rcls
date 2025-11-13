@@ -1119,7 +1119,6 @@ export async function fetchNotificationHistory(page = 1, pageSize = 20, forceUpd
                language,
           },
      });
-
      return await api.post('/UserAPI?method=getInbox', postBody);
 }
 
@@ -1269,11 +1268,11 @@ export async function updateScreenBrightnessStatus(status, url, language = 'en')
 }
 
 /** *******************************************************************
- * 
+ *
  ******************************************************************* **/
 /**
  *
- * 
+ *
 /**
  * Return a list of  for a user
  * @param {string} url
@@ -1281,7 +1280,7 @@ export async function updateScreenBrightnessStatus(status, url, language = 'en')
  * @param {string} filter
  * @param {number} page
  * @param {number} pageSize
- * 
+ *
  **/
 export async function fetchCampaigns(page = 1, pageSize = 20, filter = 'enrolled', url, language = 'en') {
      const postBody = await postData();
@@ -1330,11 +1329,11 @@ export async function fetchCampaigns(page = 1, pageSize = 20, filter = 'enrolled
 
 /**
  * Enroll in campaign
- * @param {string} campaignId 
- * @param {string} linkedUserId 
- * @param {string} url 
+ * @param {string} campaignId
+ * @param {string} linkedUserId
+ * @param {string} url
  * @param {string} language
- * @returns 
+ * @returns
  */
 export async function enrollCampaign(campaignId, linkedUserId, filter = 'enrolled', url, language = 'en'){
      const postBody = await postData();
@@ -1366,16 +1365,16 @@ export async function enrollCampaign(campaignId, linkedUserId, filter = 'enrolle
           popToast(error.title, error.message, 'error');
           logErrorMessage(response);
           return false;
-     } 
+     }
 }
 
 /**
  *Unenroll from campaign
- * @param {string} campaignId 
- * @param {string} linkedUserId 
- * @param {string} url 
- * @param {string} language * 
- * @returns 
+ * @param {string} campaignId
+ * @param {string} linkedUserId
+ * @param {string} url
+ * @param {string} language *
+ * @returns
  */
 export async function unenrollCampaign(campaignId, linkedUserId, filter = 'enrolled', url, language = 'en'){
      const postBody = await postData();
@@ -1407,17 +1406,17 @@ export async function unenrollCampaign(campaignId, linkedUserId, filter = 'enrol
           popToast(error.title, error.message, 'error');
           logErrorMessage(response);
           return false;
-     } 
+     }
 }
 
 /**
  * Opt into campaign emails
- * @param {string} campaignId 
- * @param {string} linkedUserId 
- * @param {string} url 
+ * @param {string} campaignId
+ * @param {string} linkedUserId
+ * @param {string} url
  * @param {string} language
  * @param {boolean} optIn
- * @returns 
+ * @returns
  */
 export async function optIntoCampaignEmails(campaignId, linkedUserId, filter = 'enrolled', optIn, url, language = 'en'){
      const postBody = await postData();
@@ -1452,16 +1451,16 @@ export async function optIntoCampaignEmails(campaignId, linkedUserId, filter = '
           popToast(error.title, error.message, 'error');
           logErrorMessage(response);
           return false;
-     } 
+     }
 }
 
 /**
  * Opt out of Campaign Leaderboard
- * @param {string} campaignId 
- * @param {string} linkedUserId 
- * @param {string} url 
+ * @param {string} campaignId
+ * @param {string} linkedUserId
+ * @param {string} url
  * @param {string} language
- * @returns 
+ * @returns
  */
 export async function optUserInToCampaignLeaderboard(campaignId, linkedUserId, filter = 'enrolled', url, language = 'en'){
      const postBody = await postData();
@@ -1493,16 +1492,16 @@ export async function optUserInToCampaignLeaderboard(campaignId, linkedUserId, f
           popToast(error.title, error.message, 'error');
           logErrorMessage(response);
           return false;
-     } 
+     }
 }
 
 /**
  * Opt into Campaign Leaderboard
- * @param {string} campaignId 
- * @param {string} linkedUserId 
- * @param {string} url 
+ * @param {string} campaignId
+ * @param {string} linkedUserId
+ * @param {string} url
  * @param {string} language
- * @returns 
+ * @returns
  */
 export async function optUserOutOfCampaignLeaderboard(campaignId, linkedUserId, filter = 'enrolled', url, language = 'en'){
      const postBody = await postData();
@@ -1534,18 +1533,18 @@ export async function optUserOutOfCampaignLeaderboard(campaignId, linkedUserId, 
           popToast(error.title, error.message, 'error');
           logErrorMessage(response);
           return false;
-     } 
+     }
 }
 
 /**
  * Add Progress to Activity (Milestone or Extra Credit)
- * @param {string} activityId 
- * @param {string} linkedUserId 
+ * @param {string} activityId
+ * @param {string} linkedUserId
  * @param {string} activityType - 'milestone' or 'extraCredit'
- * @param {string} filter 
- * @param {string} url 
+ * @param {string} filter
+ * @param {string} url
  * @param {string} language
- * @returns 
+ * @returns
  */
 export async function addActivityProgress(activityId, linkedUserId, activityType, filter = 'enrolled', url, language = 'en', campaignId){
      const postBody = await postData();
@@ -1579,6 +1578,6 @@ export async function addActivityProgress(activityId, linkedUserId, activityType
           popToast(error.title, error.message, 'error');
           logErrorMessage(response);
           return false;
-     } 
+     }
 }
 

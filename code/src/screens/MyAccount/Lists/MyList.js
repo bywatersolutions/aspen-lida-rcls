@@ -54,7 +54,6 @@ import { getCleanTitle } from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { getListTitles, removeTitlesFromList } from '../../../util/api/list';
-import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import EditList from './EditList';
 import { logDebugMessage, logErrorMessage } from '../../../util/logging';
 

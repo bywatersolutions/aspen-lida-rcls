@@ -39,7 +39,7 @@ import { createList } from '../../../util/api/list';
 const CreateList = (props) => {
      const { setLoading } = props;
      const queryClient = useQueryClient();
-     const { user, updateUser } = React.useContext(UserContext);
+     const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { updateLists } = React.useContext(UserContext);

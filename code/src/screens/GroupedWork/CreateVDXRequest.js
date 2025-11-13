@@ -20,7 +20,6 @@ export const CreateVDXRequest = () => {
      const oclcNumber = route.params.oclcNumber ?? null;
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
-     const { updateUser } = React.useContext(UserContext);
 
      if (location.vdxFormId === '-1' || _.isNull(location.vdxLocation)) {
           return loadError('Location not setup for VDX', '');

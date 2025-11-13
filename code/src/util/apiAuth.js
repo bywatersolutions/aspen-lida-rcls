@@ -350,6 +350,11 @@ export function getErrorMessage({ statusCode = null, problem, sendToSentry = fal
                     };
                     break;
                default:
+                    errorDetails = {
+                         title: "Unknown Error (Client-side)",
+                         message: "Unknown error " + (statusCode ?? "UNKNOWN") + " occurred. Please try again or check your connection.",
+                         code: problem,
+                    };
                     break;
           }
      } else {

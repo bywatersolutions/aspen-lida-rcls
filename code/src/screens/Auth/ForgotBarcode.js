@@ -108,7 +108,7 @@ export const ForgotBarcode = (props) => {
                } else {
                     logDebugMessage("Error initiating forgot barcode");
                     logDebugMessage(response);
-                    const error = getErrorMessage(data.code ?? 0, data.problem);
+                    const error = getErrorMessage(response.code ?? 0, response.problem);
                     setResults(error.message);
                     setShowResults(true);
                     setHasError(true);

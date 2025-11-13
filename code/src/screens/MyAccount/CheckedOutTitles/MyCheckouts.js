@@ -22,7 +22,7 @@ export const MyCheckouts = () => {
      const isFetchingCheckouts = useIsFetching({ queryKey: ['checkouts'] });
      const queryClient = useQueryClient();
      const navigation = useNavigation();
-     const { user, updateUser, userCheckoutSortMethod, updateUserCheckoutSortMethod } = React.useContext(UserContext);
+     const { user, userCheckoutSortMethod, updateUserCheckoutSortMethod } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { language } = React.useContext(LanguageContext);

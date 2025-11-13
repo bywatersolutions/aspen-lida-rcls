@@ -207,11 +207,6 @@ export const DiscoveryProvider = ({ children }) => {
      const [version, setVersion] = useState();
      const [url, setUrl] = useState();
 
-     const updateVersion = (data) => {
-          const thisVersion = formatDiscoveryVersion(data);
-          setVersion(thisVersion);
-     };
-
      const updateUrl = (data) => {
           setUrl(data);
      };
@@ -221,7 +216,6 @@ export const DiscoveryProvider = ({ children }) => {
                value={{
                     version,
                     url,
-                    updateVersion,
                     updateUrl,
                }}>
                {children}
@@ -239,9 +233,15 @@ export const LibrarySystemProvider = ({ children }) => {
 
      const updateLibrary = (data) => {
           if (!_.isUndefined(data.discoveryVersion)) {
+               logInfoMessage("Setting discovery version to " + data.discoveryVersion);
                const discovery = formatDiscoveryVersion(data.discoveryVersion);
-               setVersion(discovery);
-               logDebugMessage('updated version in LibrarySystemContext');
+               if (version != discovery) {
+                    setVersion(discovery);
+                    logDebugMessage('updated version in LibrarySystemContext');
+               }
+          }else{
+               logInfoMessage("discoveryVersion was undefined");
+               logDebugMessage(data);
           }
 
           if (!_.isUndefined(data.baseUrl)) {

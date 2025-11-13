@@ -160,7 +160,7 @@ const Account = (data) => {
      const account = data.account;
      const type = data.type;
      const [isRemoving, setIsRemoving] = React.useState(false);
-     const { user, accounts, cards, viewers, updateUser, updateLinkedAccounts, updateLibraryCards, updateLinkedViewerAccounts } = React.useContext(UserContext);
+     const { user, accounts, cards, viewers, updateLinkedAccounts, updateLibraryCards, updateLinkedViewerAccounts } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { textColor, theme, colorMode } = React.useContext(ThemeContext);

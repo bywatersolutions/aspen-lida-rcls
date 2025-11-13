@@ -187,11 +187,18 @@ export async function getLocalIllForm(url, id) {
 
 export function formatDiscoveryVersion(payload) {
      try {
-          const result = payload.split(' ');
-          if (_.isObject(result)) {
-               LIBRARY.version = result[0];
-               return result[0];
+          if (payload === undefined) {
+               logWarnMessage("Could not load discovery version, the version was undefined.");
+               LIBRARY.version = 'unknown';
+               return 'unknown';
+          }else{
+               const result = payload.split(' ');
+               if (_.isObject(result)) {
+                    LIBRARY.version = result[0];
+                    return result[0];
+               }
           }
+
      } catch (e) {
           logErrorMessage(e)
      }

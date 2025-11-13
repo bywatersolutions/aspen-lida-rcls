@@ -129,7 +129,9 @@ export const LoginScreen = () => {
           LIBRARY.url = data.baseUrl; // used in some cases before library context is set
           await getLibraryInfo(data.baseUrl, data.libraryId).then(async (result) => {
                if (_.isObject(result)) {
-                    updateLibrary(result);
+                    const library = data.data.result?.library ?? [];
+                    logDebugMessage("Updating library from Login screen");
+                    updateLibrary(library);
                     if (result.barcodeStyle) {
                          setAllowBarcodeScanner(true);
                          if (result.barcodeStyle === 'CODE39') {

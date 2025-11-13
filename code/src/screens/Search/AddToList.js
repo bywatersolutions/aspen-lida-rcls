@@ -58,7 +58,7 @@ export const AddToList = (props) => {
      const [screen, setScreen] = React.useState('add-new');
      const [loading, setLoading] = React.useState(false);
      const { library } = React.useContext(LibrarySystemContext);
-     const { user, updateUser } = React.useContext(UserContext);
+     const { user } = React.useContext(UserContext);
      const { language } = React.useContext(LanguageContext);
      const insets = useSafeAreaInsets();
      const lists = PATRON.lists;

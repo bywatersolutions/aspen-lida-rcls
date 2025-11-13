@@ -400,7 +400,7 @@ export const ManageSelectedHolds = (props) => {
      const { selectedValues, onAllDateChange, selectedReactivationDate, resetGroup, context } = props;
      const navigation = useNavigation();
      const { language } = React.useContext(LanguageContext);
-     const { user, updateUser } = React.useContext(UserContext);
+     const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { holds, updateHolds } = React.useContext(HoldsContext);
      const { theme, colorMode, textColor } = React.useContext(ThemeContext);

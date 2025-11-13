@@ -218,6 +218,7 @@ export const LoadingScreen = () => {
                if(data.ok) {
                     const library = data.data.result?.library ?? [];
                     setProgress(progress + (100 / numSteps));
+                    logDebugMessage("Updating library from Loading screen");
                     updateLibrary(library);
                     if (LIBRARY.appSettings.loadingMessageType == 1) {
                          setLoadingText('Loading User Information');
@@ -529,7 +530,7 @@ export const LoadingScreen = () => {
           }
      });
 
-     const { isSuccess: notificationHistoryQuerySuccess, status: notificationHistoryQueryStatus, data: notificationHistoryQuery } = useQuery(['notification_history'], () => fetchNotificationHistory(1, 20, true, library.baseUrl, 'en'), {
+     const { isSuccess: notificationHistoryQuerySuccess, status: notificationHistoryQueryStatus, data: notificationHistoryQuery } = useQuery(['notification_history'], () => fetchNotificationHistory(1, 20, true, LIBRARY.url, 'en'), {
           enabled: hasError === false && appPreferencesQuerySuccess,
           onSuccess: (data) => {
                if(data.ok) {

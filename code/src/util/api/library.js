@@ -30,7 +30,7 @@ export async function getLibraryInfo(url = null, id = null) {
 		libraryId = parseInt(libraryId);
 	 }
 
-     const discovery = create({
+     let discovery = create({
           baseURL: apiUrl + '/API',
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(),
@@ -39,7 +39,28 @@ export async function getLibraryInfo(url = null, id = null) {
                id: libraryId,
           },
      });
-     return await discovery.get('/SystemAPI?method=getLibraryInfo');
+     logDebugMessage("getting library info from " + url + '/API/SystemAPI?method=getLibraryInfo&id=' + libraryId);
+     let result = await discovery.get('/SystemAPI?method=getLibraryInfo');
+     logDebugMessage(result);
+     if (result.data.result.success == false && result.data.result.message == 'Library not found') {
+          //Try again with the global library id
+          logDebugMessage("Original library ID not found, trying global library ID");
+          libraryId = GLOBALS.libraryId;
+          discovery = create({
+               baseURL: apiUrl + '/API',
+               timeout: GLOBALS.timeoutFast,
+               headers: getHeaders(),
+               auth: createAuthTokens(),
+               params: {
+                    id: libraryId,
+               },
+          });
+          logDebugMessage("getting library info from " + url + '/API/SystemAPI?method=getLibraryInfo&id=' + libraryId);
+          result = await discovery.get('/SystemAPI?method=getLibraryInfo');
+          logDebugMessage(result);
+     }
+
+     return result;
 }
 
 /**
