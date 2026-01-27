@@ -309,11 +309,12 @@ export async function deleteList(listId, url, optOutOfSoftDeletion = false) {
 /**
  * Returns all list groups for a given user
  * @param {string} url
- * @param {int} page
+ * @param {int} pageGroups
+ * @param {int} pageUnassigned
  * @param {int} limit
  * @param {int} includePagination
  **/
-export async function getListGroups(url, page = 1, limit = 20, includePagination = 1) {
+export async function getListGroups(url, pageGroups = 1, pageUnassigned = 1, limit = 20, includePagination = 1) {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
@@ -321,7 +322,8 @@ export async function getListGroups(url, page = 1, limit = 20, includePagination
           headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
-               page,
+               pageUnassigned,
+               pageGroups,
                limit,
                includePagination
           }
