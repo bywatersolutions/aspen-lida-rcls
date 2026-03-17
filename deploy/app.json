@@ -1,0 +1,15 @@
+{
+  "name": "RCLS Go",
+  "slug": "rcls",
+  "easId": "6c1b1a88-8634-48d2-beb7-15fa9038f6bb",
+  "reverseDns": "org.aspendiscovery.rcls",
+  "discoveryUrl": "https://ramapo.aspendiscovery.org/",
+  "greenhouseUrl": "https://ramapo.aspendiscovery.org/",
+  "libraryId": "2",
+  "themeId": "1",
+  "background": "#0d449e",
+  "sentryProject": "aspen-lida-rcls",
+  "sentryDsn": "https://36b45a18e15793182f3f1b141006cd14@o994439.ingest.sentry.io/4506547785302016",
+  "ascAppId": "6475780498",
+  "logLevel": "0"
+}
