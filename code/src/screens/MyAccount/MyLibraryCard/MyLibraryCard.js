@@ -328,7 +328,11 @@ const CreateLibraryCard = (data) => {
      }
 
      let expirationDate = null;
-     if (!_.isUndefined(card.expires) && !_.isNull(card.expires)) {
+     if (!_.isUndefined(card.expires) 
+          && !_.isNull(card.expires)
+          && (card.expires !== "")
+          && (card.expires !== "Dec 31, 1969")) {
+               
           if (_.isString(card.expires)) {
                expirationDate = moment(card.expires, 'MMM D, YYYY');
           }
