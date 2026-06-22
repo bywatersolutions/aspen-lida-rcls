@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, ChevronDownIcon, Heading, HStack, VStack, Badge, BadgeText, Button, ButtonGroup, ButtonText, ButtonIcon, Box, Icon, Center, AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, AlertDialogBackdrop, Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, SelectScrollView } from '@gluestack-ui/themed';
+import { Text, ChevronDownIcon, Heading, HStack, VStack, Badge, BadgeText, Button, ButtonGroup, ButtonText, ButtonIcon, Box, Icon, Center, AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, AlertDialogBackdrop, Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem, SelectScrollView, ScrollView } from '@gluestack-ui/themed';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -121,49 +121,53 @@ export const Editions = () => {
      const records = data?.records ? (Array.isArray(data.records) ? data.records : Object.values(data.records)) : [];
 
      return (
-          <Box safeArea={5} flex={1}>
-               {isFetching ? (
-                    loadingSpinner()
-               ) : status === 'error' ? (
-                    loadError('Error', '')
-               ) : records.length === 0 ? (
-                    <Center p="$5">
-                         <Text>Edition information was not found</Text>
-                    </Center>
-               ) : (
-                    <VStack space="md" p="$3">
-                         {records.map((record, index) => (
-                              <Edition
-                                   key={record.id || index.toString()}
-                                   records={record}
-                                   id={id}
-                                   format={format}
-                                   volumeInfo={volumeInfo}
-                                   prevRoute={prevRoute}
-                                   setResponseIsOpen={setResponseIsOpen}
-                                   responseIsOpen={responseIsOpen}
-                                   onResponseClose={onResponseClose}
-                                   cancelResponseRef={cancelResponseRef}
-                                   response={response}
-                                   setResponse={setResponse}
-                                   setHoldConfirmationIsOpen={setHoldConfirmationIsOpen}
-                                   holdConfirmationIsOpen={holdConfirmationIsOpen}
-                                   onHoldConfirmationClose={onHoldConfirmationClose}
-                                   cancelHoldConfirmationRef={cancelHoldConfirmationRef}
-                                   holdConfirmationResponse={holdConfirmationResponse}
-                                   setHoldConfirmationResponse={setHoldConfirmationResponse}
-                                   setHoldItemSelectIsOpen={setHoldItemSelectIsOpen}
-                                   holdItemSelectIsOpen={holdItemSelectIsOpen}
-                                   onHoldItemSelectClose={onHoldItemSelectClose}
-                                   cancelHoldItemSelectRef={cancelHoldItemSelectRef}
-                                   holdSelectItemResponse={holdSelectItemResponse}
-                                   setHoldSelectItemResponse={setHoldSelectItemResponse}
-                                   userHasAlternateLibraryCard={userHasAlternateLibraryCard}
-                                   shouldPromptAlternateLibraryCard={shouldPromptAlternateLibraryCard}
-                              />
-                         ))}
-                    </VStack>
-               )}
+          <Box flex={1}>
+               <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
+                    <Box p="$3">
+                         {isFetching ? (
+                              loadingSpinner()
+                         ) : status === 'error' ? (
+                              loadError('Error', '')
+                         ) : records.length === 0 ? (
+                              <Center p="$5">
+                                   <Text>Edition information was not found</Text>
+                              </Center>
+                         ) : (
+                              <VStack space="md">
+                                   {records.map((record, index) => (
+                                        <Edition
+                                             key={record.id || index.toString()}
+                                             records={record}
+                                             id={id}
+                                             format={format}
+                                             volumeInfo={volumeInfo}
+                                             prevRoute={prevRoute}
+                                             setResponseIsOpen={setResponseIsOpen}
+                                             responseIsOpen={responseIsOpen}
+                                             onResponseClose={onResponseClose}
+                                             cancelResponseRef={cancelResponseRef}
+                                             response={response}
+                                             setResponse={setResponse}
+                                             setHoldConfirmationIsOpen={setHoldConfirmationIsOpen}
+                                             holdConfirmationIsOpen={holdConfirmationIsOpen}
+                                             onHoldConfirmationClose={onHoldConfirmationClose}
+                                             cancelHoldConfirmationRef={cancelHoldConfirmationRef}
+                                             holdConfirmationResponse={holdConfirmationResponse}
+                                             setHoldConfirmationResponse={setHoldConfirmationResponse}
+                                             setHoldItemSelectIsOpen={setHoldItemSelectIsOpen}
+                                             holdItemSelectIsOpen={holdItemSelectIsOpen}
+                                             onHoldItemSelectClose={onHoldItemSelectClose}
+                                             cancelHoldItemSelectRef={cancelHoldItemSelectRef}
+                                             holdSelectItemResponse={holdSelectItemResponse}
+                                             setHoldSelectItemResponse={setHoldSelectItemResponse}
+                                             userHasAlternateLibraryCard={userHasAlternateLibraryCard}
+                                             shouldPromptAlternateLibraryCard={shouldPromptAlternateLibraryCard}
+                                        />
+                                   ))}
+                              </VStack>
+                         )}
+                    </Box>
+               </ScrollView>
                <Center>
                     <AlertDialog leastDestructiveRef={cancelResponseRef} isOpen={responseIsOpen} onClose={onResponseClose}>
                          <AlertDialogBackdrop />
@@ -367,7 +371,7 @@ const Edition = (props) => {
      const statusIndicator = getStatusIndicator(status, language);
 
      return (
-          <Box mt="$2" mb="$0" p="$3" borderBottomWidth="$1" borderColor="$warmGray200">
+          <Box mt="$0" mb="$0" p="$3" borderBottomWidth="$1" borderColor="$warmGray200">
                <HStack justifyContent="space-between" alignItems="center" space="sm" flex={1}>
                     <VStack space="sm" maxW="40%" flex={1} justifyContent="center">
                          <Text size="xs" color={textColor}>
