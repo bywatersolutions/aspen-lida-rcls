@@ -20,11 +20,10 @@ export const SelectNewHoldSublocation = (props) => {
                     const sublocationValues = Object.values(sublocations);
                     let activeSublocationNeedsToChange = true;
                     logDebugMessage("Active sublocation is " + activeSublocation);
-                    for (index in sublocationValues) {
-                         let sublocation = sublocationValues[index];
+                    for (const sublocation of sublocationValues) {
                          if (sublocation.locationCode == location) {
-                             validSublocations.push(sublocation);
-                              if (activeSublocation == sublocation.id) {
+                              validSublocations.push(sublocation);
+                              if (activeSublocation === sublocation.id) {
                                    activeSublocationNeedsToChange = false;
                               }
                          }

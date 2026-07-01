@@ -52,3 +52,91 @@ export const LOGIN_DATA = {
      loadedInitialData: false,
      themeSaved: false,
 };
+
+export const PATRON = {
+     userToken: null,
+     scope: null,
+     library: null,
+     location: null,
+     listLastUsed: null,
+     fines: 0,
+     messages: [],
+     num: {
+          checkedOut: 0,
+          holds: 0,
+          lists: 0,
+          overdue: 0,
+          ready: 0,
+          savedSearches: 0,
+          updatedSearches: 0,
+     },
+     promptForOverdriveEmail: 1,
+     rememberHoldPickupLocation: 0,
+     pickupLocations: [],
+     language: 'en',
+     coords: {
+          lat: null,
+          long: null,
+     },
+     linkedAccounts: [],
+     holds: [],
+     lists: [],
+     browseCategories: [],
+     sublocations: [],
+     hideSoftDeleteListUI: false,
+};
+
+
+export const SearchGlobal = {
+     term: null,
+     id: null,
+     hasPendingChanges: false,
+     sortMethod: 'relevance',
+     appliedFilters: [],
+     sortList: [],
+     availableFacets: [],
+     defaultFacets: [],
+     pendingFilters: [],
+     appendedParams: '',
+     searchSource: 'local',
+     searchIndex: 'Keyword',
+};
+
+export function resetSearchGlobals() {
+     SearchGlobal.term = null;
+     SearchGlobal.id = null;
+     SearchGlobal.hasPendingChanges = false;
+     SearchGlobal.sortMethod = 'relevance';
+     SearchGlobal.appliedFilters = [];
+     SearchGlobal.sortList = [];
+     SearchGlobal.availableFacets = [];
+     SearchGlobal.pendingFilters = [];
+     SearchGlobal.appendedParams = '';
+     //logDebugMessage('Reset global search variables'); // this creates a require cycle even though we aren't even using it
+}
+
+export const LIBRARY = {
+     url: '',
+     name: '',
+     favicon: '',
+     languages: [],
+     vdx: [],
+     localIll: [],
+     id: 0,
+     version: null,
+};
+
+export const BRANCH = {
+     name: '',
+     vdxFormId: null,
+     vdxLocation: null,
+     vdx: [],
+     localIllFormId: null,
+};
+
+export const ALL_LOCATIONS = {
+     branches: [],
+};
+
+export const ALL_BRANCHES = {};
+

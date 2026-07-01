@@ -17,10 +17,11 @@ import { PermissionsPrompt } from '../../../components/PermissionsPrompt';
 import { LanguageContext, LibrarySystemContext, ThemeContext, UserContext } from '../../../context/initialContext';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
-import { formatLinkedAccounts, getLinkedAccounts, updateScreenBrightnessStatus } from '../../../util/api/user';
-import { formatDiscoveryVersion } from '../../../util/loadLibrary';
-import { logDebugMessage, logErrorMessage } from '../../../util/logging';
-import { getErrorMessage } from '../../../util/apiAuth';
+import { getLinkedAccounts, updateScreenBrightnessStatus } from '../../../util/api/user';
+import { formatLinkedAccounts } from '../../../util/api/userHelper';
+
+import { formatDiscoveryVersion } from '../../../helpers/helpers';
+import { logDebugMessage, logErrorMessage, getErrorMessage } from '../../../util/logging';
 
 export const MyLibraryCard = () => {
      const queryClient = useQueryClient();
@@ -436,7 +437,9 @@ const CreateLibraryCard = (data) => {
                          </Button>
                     ) : (
                          <VStack alignItems="center" space="sm">
-                              <Box bg={theme['colors']['warmGray']['200']} p="$3" borderRadius="$sm">
+                              <Box bg={theme['colors']['warmGray']['200']} 
+                                   p="$3" 
+                                   borderRadius="$sm">
                                    <Barcode
                                         value={barcodeValue}
                                         format={barcodeStyle}
@@ -673,18 +676,23 @@ const BarcodeModal = ({ card, showModal, closeModal, language }) => {
      };
 
      return (
-          <Modal isOpen={showModal} onClose={closeModal} size="xl">
+          <Modal isOpen={showModal} onClose={closeModal} size="full">
                     <ModalBackdrop sx={{ opacity: 0.85 }} />
                     <ModalContent bgColor="white">
                          <ModalBody style={{margin: 20}} bgColor="white" p="$4">
                               {/* Always render barcode to measure it, but hide if showing warning. */}
                               <Box style={{ opacity: showRotateWarning ? 0 : 1, position: showRotateWarning ? 'absolute' : 'relative' }}>
                                    <Center p="$2">
-                                        <Box onLayout={onBarcodeLayout}>
+                                        <Box 
+                                             bg={theme['colors']['warmGray']['200']} 
+                                             p="$3" 
+                                             borderRadius="$sm" 
+                                             onLayout={onBarcodeLayout}>
                                              <Barcode
                                                   value={barcodeValue}
                                                   format={barcodeStyle}
                                                   onError={handleBarcodeError}
+                                                  background={theme['colors']['warmGray']['200']}
                                              />
                                         </Box>
                                    </Center>
