@@ -25,7 +25,7 @@ export async function getGroupedWork(itemId, language, url = null) {
           language,
      });
 
-     const data = response.data?.result ?? response.data ?? {};
+     const data = response.data?.result ?? response.data.result ?? {};
      const formatKeys = data?.formats ? Object.keys(data.formats) : [];
      const firstFormat = formatKeys[0] ?? '';
 
